@@ -1,7 +1,7 @@
 const CACHE = 'road2026-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
+  '/album-fifa-2026/',
+  '/album-fifa-2026/index.html',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
@@ -24,7 +24,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).catch(() => caches.match('/index.html'));
+      return cached || fetch(e.request).catch(() => caches.match('/album-fifa-2026/index.html'));
     })
   );
 });
