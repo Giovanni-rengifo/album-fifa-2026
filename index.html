@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Road to 2026</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#091a10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Road 2026">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#091a10;color:#fff;font-family:system-ui,sans-serif;min-height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;width:100%}
+header{background:#050f0a;border-bottom:1px solid #12301c;padding:8px 12px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+.header-title{font-size:15px;font-weight:900;letter-spacing:.05em;color:#facc15;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0;flex:1}
+.global-badge{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);color:#facc15;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.global-progress-wrap{width:100%;background:rgba(0,0,0,.4);height:6px;border-radius:999px;overflow:hidden}
+.global-progress-fill{background:linear-gradient(90deg,#16a34a,#facc15);height:100%;border-radius:999px;transition:width .4s ease}
+.search-wrap{position:relative;margin-bottom:8px}
+.search-wrap .sicon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#6b7280;font-size:12px;pointer-events:none}
+#search-input{width:100%;background:#0d2416;border:1px solid #1b472c;color:#fff;font-size:12px;border-radius:12px;padding:7px 32px 7px 30px;outline:none}
+#search-input:focus{border-color:#facc15}
+#search-input::placeholder{color:#4b5563}
+#clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6b7280;cursor:pointer;display:none;font-size:13px;padding:2px}
+.tabs{display:flex;background:#0d2416;padding:4px;border-radius:12px;border:1px solid #153a22;gap:2px}
+.tab{flex:1;padding:7px 4px;font-size:11px;font-weight:700;border-radius:8px;border:none;cursor:pointer;transition:all .15s;background:none;color:#9ca3af}
+.tab.active-faltan{background:#7f1d1d;color:#fff}
+.tab.active-tengo{background:#14532d;color:#fff}
+.tab.active-repes{background:#78350f;color:#000}
+.tab.active-stats{background:#1e3a5f;color:#fff}
+.tab.active-share{background:#4a1d96;color:#fff}
+.tab.active-backup{background:#1e3a5f;color:#fff}
+main{flex:1;overflow-y:auto;padding:10px 12px;-webkit-overflow-scrolling:touch}
+.back-btn{display:none;margin-bottom:8px}
+.back-btn button{font-size:12px;font-weight:700;color:#facc15;background:#12301c;padding:5px 12px;border-radius:12px;border:1px solid #1b472c;display:flex;align-items:center;gap:5px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.country-card{background:#0d2416;border:1px solid #1b472c;border-radius:16px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .1s;text-align:center;position:relative}
+.country-card:active{transform:scale(.95)}
+.country-card.complete{border-color:#eab308;box-shadow:0 0 0 1px rgba(234,179,8,.3)}
+.complete-badge{position:absolute;top:4px;right:4px;background:#eab308;color:#000;font-size:8px;font-weight:900;padding:1px 4px;border-radius:4px}
+.flag-circle{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:2px;flex-shrink:0}
+.flag-circle img{width:44px;height:44px;object-fit:cover;border-radius:50%}
+.flag-circle span{font-size:20px}
+.country-code{font-weight:900;font-size:13px;letter-spacing:.05em}
+.country-page{font-size:10px;color:#9ca3af}
+.progress-bar{width:100%;background:rgba(0,0,0,.4);height:5px;border-radius:999px;overflow:hidden;margin-top:3px}
+.progress-fill{background:#22c55e;height:100%;border-radius:999px}
+.progress-count{font-size:10px;color:#eab308;font-weight:700;margin-top:2px}
+.sticker-card{border:1px solid;border-radius:16px;padding:10px 8px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;position:relative;min-height:110px}
+.sticker-card.tengo{background:#123a1f;border-color:rgba(34,197,94,.6)}
+.sticker-card.falta{background:#151f19;border-color:rgba(127,29,29,.3);opacity:.8}
+.sticker-top{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:3px}
+.sticker-num{font-weight:900;font-size:14px;color:#fff}
+.sticker-label{font-size:11px;color:#d1d5db;text-align:center}
+.sticker-status{font-size:11px;font-weight:800;display:flex;align-items:center;gap:3px;justify-content:center}
+.sticker-status.tengo{color:#4ade80}
+.sticker-status.falta{color:#f87171}
+.repe-badge{position:absolute;top:5px;right:5px;background:#eab308;color:#000;font-size:9px;font-weight:900;padding:2px 5px;border-radius:6px}
+.repe-ctrl{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3);border-radius:8px;padding:3px;gap:4px;margin-top:4px}
+.repe-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:none;border-radius:6px;font-size:13px;cursor:pointer;transition:all .1s;flex-shrink:0}
+.repe-btn:active{transform:scale(.88)}
+.repe-btn.minus{background:rgba(127,29,29,.25);color:#f87171}
+.repe-btn.plus{background:rgba(20,83,45,.25);color:#4ade80}
+.repe-lbl{font-size:9px;font-weight:900;color:#6b7280;letter-spacing:.05em}
+.stats-section{margin-bottom:16px}
+.stats-title{font-size:11px;font-weight:900;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat-card{background:#0d2416;border:1px solid #1b472c;border-radius:14px;padding:12px 10px;text-align:center}
+.stat-val{font-size:22px;font-weight:900;color:#facc15;line-height:1}
+.stat-lbl{font-size:10px;color:#6b7280;margin-top:4px}
+.country-rank{display:flex;flex-direction:column;gap:5px}
+.rank-row{display:flex;align-items:center;gap:8px;background:#0d2416;border:1px solid #1b472c;border-radius:10px;padding:7px 10px}
+.rank-flag{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
+.rank-flag img{width:28px;height:28px;object-fit:cover;border-radius:50%}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-bar-wrap{width:100%;background:rgba(0,0,0,.4);height:4px;border-radius:999px;overflow:hidden;margin-top:3px}
+.rank-bar-fill{height:100%;border-radius:999px;background:#22c55e}
+.rank-pct{font-size:11px;font-weight:900;color:#facc15;flex-shrink:0;min-width:34px;text-align:right}
+.share-box{background:#0d2416;border:1px solid #1b472c;border-radius:14px;padding:12px;margin-bottom:14px}
+.share-box textarea{width:100%;background:#091a10;border:1px solid #1b472c;color:#d1fae5;font-size:11px;border-radius:8px;padding:8px;resize:none;outline:none;font-family:monospace;line-height:1.5}
+.share-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-top:8px;transition:all .15s}
+.share-btn:active{transform:scale(.97)}
+.share-btn.green{background:#16a34a;color:#fff}
+.share-btn.purple{background:#7c3aed;color:#fff}
+.share-btn.blue{background:#1d4ed8;color:#fff}
+.share-lbl{font-size:11px;font-weight:700;color:#6b7280;margin-bottom:6px}
+.sort-bar{display:flex;gap:6px;margin-bottom:10px}
+.sort-btn{flex:1;padding:5px;font-size:10px;font-weight:700;border-radius:8px;border:1px solid #1b472c;background:#0d2416;color:#9ca3af;cursor:pointer;transition:all .15s}
+.sort-btn.active{background:#1b472c;color:#facc15;border-color:#facc15}
+.no-results{display:none;text-align:center;padding:48px 0;color:#4b5563;font-size:13px}
+.no-results i{font-size:32px;margin-bottom:8px;display:block}
+footer{background:#050f0a;border-top:1px solid #12301c;padding:10px 16px 20px;flex-shrink:0}
+.foot-inner{display:flex;align-items:center;justify-content:space-between;max-width:340px;margin:0 auto}
+.nav-btn{width:40px;height:40px;border-radius:12px;background:#0d2416;border:1px solid #1b472c;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .1s;color:#fff}
+.nav-btn:disabled{opacity:.2;cursor:default}
+.nav-btn:not(:disabled):active{transform:scale(.9)}
+.page-info{text-align:center}
+.page-text{font-size:10px;color:#6b7280;font-weight:600;margin-bottom:5px}
+.dots{display:flex;justify-content:center;gap:4px;align-items:center}
+.dot{height:5px;border-radius:999px;background:#1b472c;transition:all .2s}
+.dot.active{background:#facc15;width:12px}
+.dot:not(.active){width:5px}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#facc15;color:#000;padding:7px 18px;border-radius:999px;font-size:11px;font-weight:900;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="header-top">
+    <div class="header-title"><i class="fa-solid fa-trophy" style="color:#eab308"></i> ROAD TO 2026</div>
+    <div class="header-right">
+      <div class="global-badge"><i class="fa-solid fa-chart-line"></i> <span id="global-counter">0/980 (0%)</span></div>
+      <div class="global-progress-wrap"><div class="global-progress-fill" id="global-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <i class="fa-solid fa-magnifying-glass sicon"></i>
+    <input type="text" id="search-input" placeholder="Buscar país o lámina (ej: COL 13)...">
+    <button id="clear-btn"><i class="fa-solid fa-circle-xmark"></i></button>
+  </div>
+  <div class="tabs">
+    <button class="tab" id="tab-faltan" onclick="changeTab('faltan')">Faltan (<span id="cnt-faltan">0</span>)</button>
+    <button class="tab" id="tab-tengo" onclick="changeTab('tengo')">Tengo (<span id="cnt-tengo">0</span>)</button>
+    <button class="tab" id="tab-repes" onclick="changeTab('repes')">Repes (<span id="cnt-repes">0</span>)</button>
+    <button class="tab" id="tab-stats" onclick="changeTab('stats')"><i class="fa-solid fa-chart-pie"></i></button>
+    <button class="tab" id="tab-share" onclick="changeTab('share')"><i class="fa-brands fa-whatsapp"></i></button>
+    <button class="tab" id="tab-backup" onclick="changeTab('backup')"><i class="fa-solid fa-database"></i></button>
+  </div>
+</header>
+<main id="main">
+  <div class="back-btn" id="back-wrap">
+    <button onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> <span id="back-label">Volver</span></button>
+  </div>
+  <div id="sort-wrap" class="sort-bar" style="display:none">
+    <button class="sort-btn active" id="sort-az" onclick="setSort('az')">A–Z</button>
+    <button class="sort-btn" id="sort-pct" onclick="setSort('pct')">% Completado</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div id="stats-view" style="display:none"></div>
+  <div id="share-view" style="display:none"></div>
+  <div id="backup-view" style="display:none"></div>
+  <div class="no-results" id="no-results"><i class="fa-regular fa-folder-open"></i><p>Sin resultados</p></div>
+</main>
+<footer id="footer">
+  <div class="foot-inner">
+    <button class="nav-btn" id="prev-btn" onclick="prevPage()" disabled><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="page-info">
+      <div class="page-text" id="page-text">Pág. 1 de 1</div>
+      <div class="dots" id="dots"></div>
+    </div>
+    <button class="nav-btn" id="next-btn" onclick="nextPage()"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</footer>
+</div>
+<div id="toast"></div>
+<script>
+var TOTAL = 980;
+var COUNTRIES_RAW = [
+  {code:"ALG",name:"Argelia",iso:"dz",page:84},
+  {code:"ARG",name:"Argentina",iso:"ar",page:82},
+  {code:"AUS",name:"Australia",iso:"au",page:36},
+  {code:"AUT",name:"Austria",iso:"at",page:86},
+  {code:"BEL",name:"Bélgica",iso:"be",page:58},
+  {code:"BIH",name:"Bosnia-Herzegovina",iso:"ba",page:18},
+  {code:"BRA",name:"Brasil",iso:"br",page:24},
+  {code:"CAN",name:"Canadá",iso:"ca",page:16},
+  {code:"CIV",name:"Costa de Marfil",iso:"ci",page:44},
+  {code:"COD",name:"Congo DR",iso:"cd",page:92},
+  {code:"COL",name:"Colombia",iso:"co",page:96},
+  {code:"CPV",name:"Cabo Verde",iso:"cv",page:68},
+  {code:"CRO",name:"Croacia",iso:"hr",page:100},
+  {code:"CUW",name:"Curazao",iso:"cw",page:42},
+  {code:"CZE",name:"Rep. Checa",iso:"cz",page:14},
+  {code:"ECU",name:"Ecuador",iso:"ec",page:46},
+  {code:"EGY",name:"Egipto",iso:"eg",page:60},
+  {code:"ENG",name:"Inglaterra",iso:"gb-eng",page:98},
+  {code:"ESP",name:"España",iso:"es",page:66},
+  {code:"FRA",name:"Francia",iso:"fr",page:74},
+  {code:"GER",name:"Alemania",iso:"de",page:40},
+  {code:"GHA",name:"Ghana",iso:"gh",page:102},
+  {code:"HAI",name:"Haití",iso:"ht",page:28},
+  {code:"IRN",name:"Irán",iso:"ir",page:62},
+  {code:"IRQ",name:"Irak",iso:"iq",page:78},
+  {code:"JOR",name:"Jordania",iso:"jo",page:88},
+  {code:"JPN",name:"Japón",iso:"jp",page:50},
+  {code:"KOR",name:"Corea del Sur",iso:"kr",page:12},
+  {code:"KSA",name:"Arabia Saudita",iso:"sa",page:70},
+  {code:"MAR",name:"Marruecos",iso:"ma",page:26},
+  {code:"MEX",name:"México",iso:"mx",page:8},
+  {code:"NED",name:"Países Bajos",iso:"nl",page:48},
+  {code:"NOR",name:"Noruega",iso:"no",page:80},
+  {code:"NZL",name:"Nueva Zelanda",iso:"nz",page:64},
+  {code:"PAN",name:"Panamá",iso:"pa",page:104},
+  {code:"PAR",name:"Paraguay",iso:"py",page:34},
+  {code:"POR",name:"Portugal",iso:"pt",page:90},
+  {code:"QAT",name:"Catar",iso:"qa",page:20},
+  {code:"RSA",name:"Sudáfrica",iso:"za",page:10},
+  {code:"SCO",name:"Escocia",iso:"gb-sct",page:30},
+  {code:"SEN",name:"Senegal",iso:"sn",page:76},
+  {code:"SUI",name:"Suiza",iso:"ch",page:22},
+  {code:"SWE",name:"Suecia",iso:"se",page:52},
+  {code:"TUN",name:"Túnez",iso:"tn",page:54},
+  {code:"TUR",name:"Turquía",iso:"tr",page:38},
+  {code:"URU",name:"Uruguay",iso:"uy",page:72},
+  {code:"USA",name:"Estados Unidos",iso:"us",page:32},
+  {code:"UZB",name:"Uzbekistán",iso:"uz",page:94}
+];
+
+// Países normales: láminas 1-20. FWC: láminas 0-19
+var COUNTRIES = COUNTRIES_RAW.map(function(c){
+  return {code:c.code,name:c.name,iso:c.iso,page:c.page,from:1,to:20};
+});
+COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,to:19});
+
+var PER_PAGE = 12;
+var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
+
+// Crear registro limpio para un país
+function makeRecord(c){
+  var owned={}, repes={};
+  for(var i=c.from; i<=c.to; i++){ owned[i]=false; repes[i]=0; }
+  return {owned:owned, repes:repes};
+}
+
+// Contar láminas de un país
+function countOwned(c){
+  var rec=S.db[c.code], n=0;
+  for(var i=c.from;i<=c.to;i++){ if(rec.owned[i]===true) n++; }
+  return n;
+}
+function countRepes(c){
+  var rec=S.db[c.code], n=0;
+  for(var i=c.from;i<=c.to;i++){ n+=rec.repes[i]||0; }
+  return n;
+}
+function countTotal(c){ return c.to - c.from + 1; }
+
+function initDB(){
+  try{
+    var s=localStorage.getItem('panini2026');
+    if(s){
+      var loaded=JSON.parse(s);
+      // Migrar formato antiguo (arrays) a nuevo (objetos)
+      COUNTRIES.forEach(function(c){
+        if(loaded[c.code]){
+          var old=loaded[c.code];
+          // Si owned es array, convertir
+          if(Array.isArray(old.owned)){
+            var rec=makeRecord(c);
+            for(var i=c.from;i<=c.to;i++){
+              rec.owned[i] = old.owned[i]===true;
+              rec.repes[i] = old.repes[i]||0;
+            }
+            S.db[c.code]=rec;
+          } else {
+            S.db[c.code]=old;
+          }
+        }
+      });
+    }
+  }catch(e){}
+  // Crear registros faltantes
+  COUNTRIES.forEach(function(c){
+    if(!S.db[c.code]) S.db[c.code]=makeRecord(c);
+  });
+  changeTab('faltan');
+}
+
+function saveDB(){
+  try{ localStorage.setItem('panini2026',JSON.stringify(S.db)); }catch(e){}
+}
+
+function updateGlobal(){
+  var owned=0, repes=0;
+  COUNTRIES.forEach(function(c){ owned+=countOwned(c); repes+=countRepes(c); });
+  var missing=TOTAL-owned;
+  var pct=Math.round(owned/TOTAL*100);
+  document.getElementById('global-counter').textContent=owned+'/'+TOTAL+' ('+pct+'%)';
+  document.getElementById('global-bar').style.width=pct+'%';
+  document.getElementById('cnt-tengo').textContent=owned;
+  document.getElementById('cnt-faltan').textContent=missing;
+  document.getElementById('cnt-repes').textContent=repes;
+}
+
+var _tt;
+function toast(msg){
+  var e=document.getElementById('toast');
+  e.textContent=msg; e.classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(function(){e.classList.remove('show');},900);
+}
+
+function setSort(s){
+  S.sort=s; S.page=0;
+  document.getElementById('sort-az').className='sort-btn'+(s==='az'?' active':'');
+  document.getElementById('sort-pct').className='sort-btn'+(s==='pct'?' active':'');
+  render();
+}
+
+function changeTab(t){
+  S.tab=t; S.page=0;
+  ['faltan','tengo','repes','stats','share','backup'].forEach(function(x){
+    document.getElementById('tab-'+x).className='tab'+(x===t?' active-'+x:'');
+  });
+  render();
+}
+
+// Devuelve lista filtrada según tab activo
+function getCountryList(){
+  var q=S.q.trim().toLowerCase();
+  var list=COUNTRIES.filter(function(c){
+    // Filtro búsqueda
+    if(q && c.code.toLowerCase().indexOf(q)===-1 && c.name.toLowerCase().indexOf(q)===-1) return false;
+    var rec=S.db[c.code];
+    var hasTengo=false, hasRepe=false, hasFalta=false;
+    for(var i=c.from;i<=c.to;i++){
+      if(rec.owned[i]===true){ hasTengo=true; }
+      else { hasFalta=true; }
+      if((rec.repes[i]||0)>0){ hasRepe=true; }
+    }
+    if(S.tab==='tengo') return hasTengo;
+    if(S.tab==='repes') return hasRepe;
+    return hasFalta; // faltan
+  });
+  if(S.sort==='pct'){
+    list.sort(function(a,b){
+      var pa=Math.round(countOwned(a)/countTotal(a)*100);
+      var pb=Math.round(countOwned(b)/countTotal(b)*100);
+      return pb-pa;
+    });
+  }
+  return list;
+}
+
+function getStickerList(c){
+  var rec=S.db[c.code], arr=[];
+  for(var i=c.from;i<=c.to;i++){
+    if(S.tab==='tengo'  && rec.owned[i]===true)    arr.push(i);
+    if(S.tab==='faltan' && rec.owned[i]!==true)    arr.push(i);
+    if(S.tab==='repes'  && (rec.repes[i]||0)>0)   arr.push(i);
+  }
+  return arr;
+}
+
+function stickerLabel(c,n){
+  if(c.code==='FWC') return 'Especial';
+  if(n===1) return 'Escudo';
+  if(n===2) return 'Arquero';
+  if(n===13) return 'Equipo';
+  return 'Jugador';
+}
+
+function renderStats(){
+  var sv=document.getElementById('stats-view'); sv.style.display='block';
+  var owned=0,repes=0,complete=0;
+  COUNTRIES.forEach(function(c){
+    var o=countOwned(c); owned+=o; repes+=countRepes(c);
+    if(o===countTotal(c)) complete++;
+  });
+  var missing=TOTAL-owned, pct=Math.round(owned/TOTAL*100);
+  var ranked=COUNTRIES.slice().sort(function(a,b){
+    return Math.round(countOwned(b)/countTotal(b)*100) - Math.round(countOwned(a)/countTotal(a)*100);
+  });
+  var html='<div class="stats-section"><div class="stats-title">Resumen general</div><div class="stats-grid">';
+  html+='<div class="stat-card"><div class="stat-val">'+owned+'</div><div class="stat-lbl">Láminas tengo</div></div>';
+  html+='<div class="stat-card"><div class="stat-val">'+missing+'</div><div class="stat-lbl">Me faltan</div></div>';
+  html+='<div class="stat-card"><div class="stat-val">'+repes+'</div><div class="stat-lbl">Repetidas</div></div>';
+  html+='<div class="stat-card"><div class="stat-val" style="color:#4ade80">'+complete+'</div><div class="stat-lbl">Países completos</div></div>';
+  html+='</div></div><div class="stats-section"><div class="stats-title">Ranking por completado</div><div class="country-rank">';
+  ranked.forEach(function(c){
+    var o=countOwned(c), t=countTotal(c), p=Math.round(o/t*100);
+    var fi=c.iso==='fwc'?'<span style="font-size:16px">✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" style="width:28px;height:28px;object-fit:cover;border-radius:50%">';
+    html+='<div class="rank-row"><div class="rank-flag">'+fi+'</div>'+
+      '<div class="rank-info"><div class="rank-name">'+c.code+' — '+c.name+'</div>'+
+      '<div class="rank-bar-wrap"><div class="rank-bar-fill" style="width:'+p+'%"></div></div></div>'+
+      '<div class="rank-pct">'+p+'%</div></div>';
+  });
+  html+='</div></div>';
+  sv.innerHTML=html;
+}
+
+function renderShare(){
+  var sv=document.getElementById('share-view'); sv.style.display='block';
+  var fLines=['🏆 *Road to 2026 — Me faltan:*'], rLines=['🏆 *Road to 2026 — Tengo de más:*'];
+  COUNTRIES.forEach(function(c){
+    var rec=S.db[c.code], fm=[], rm=[];
+    for(var i=c.from;i<=c.to;i++){
+      var lbl=i===0?'00':String(i);
+      if(rec.owned[i]!==true) fm.push(lbl);
+      if((rec.repes[i]||0)>0) rm.push(lbl+'(×'+rec.repes[i]+')');
+    }
+    if(fm.length) fLines.push('*'+c.code+'*: '+fm.join(', '));
+    if(rm.length) rLines.push('*'+c.code+'*: '+rm.join(', '));
+  });
+  if(fLines.length===1) fLines.push('¡No me falta ninguna! 🎉');
+  if(rLines.length===1) rLines.push('No tengo repetidas aún.');
+  sv.innerHTML=
+    '<div class="share-box"><div class="share-lbl">📋 Me faltan estas láminas:</div>'+
+    '<textarea id="txt-faltan" rows="6" readonly>'+fLines.join('\n')+'</textarea>'+
+    '<button class="share-btn green" onclick="copyShare(\'faltan\')"><i class="fa-brands fa-whatsapp"></i> Copiar "Me faltan"</button></div>'+
+    '<div class="share-box"><div class="share-lbl">🔁 Tengo de más para dar:</div>'+
+    '<textarea id="txt-repes" rows="6" readonly>'+rLines.join('\n')+'</textarea>'+
+    '<button class="share-btn purple" onclick="copyShare(\'repes\')"><i class="fa-brands fa-whatsapp"></i> Copiar "Tengo de más"</button></div>';
+}
+
+function copyShare(type){
+  var el=document.getElementById('txt-'+type);
+  if(navigator.clipboard){ navigator.clipboard.writeText(el.value).then(function(){ toast('✅ Copiado'); }); }
+  else{ el.select(); document.execCommand('copy'); toast('✅ Copiado'); }
+}
+
+function renderBackup(){
+  var bkv=document.getElementById('backup-view'); bkv.style.display='block';
+  bkv.innerHTML=
+    '<div class="share-box"><div class="stats-title" style="margin-bottom:8px">💾 Exportar datos</div>'+
+    '<div class="share-lbl">Descarga un archivo con todo tu progreso.</div>'+
+    '<button class="share-btn green" onclick="exportData()"><i class="fa-solid fa-download"></i> Descargar respaldo</button></div>'+
+    '<div class="share-box"><div class="stats-title" style="margin-bottom:8px">📂 Importar datos</div>'+
+    '<div class="share-lbl">Restaura tu progreso desde un respaldo.<br><strong style="color:#f87171">Reemplazará tus datos actuales.</strong></div>'+
+    '<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">'+
+    '<button class="share-btn blue" onclick="document.getElementById(\'import-file\').click()"><i class="fa-solid fa-upload"></i> Cargar respaldo</button></div>';
+}
+
+function exportData(){
+  var data={version:2,date:new Date().toISOString(),db:S.db};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='road2026-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  URL.revokeObjectURL(url); toast('✅ Respaldo descargado');
+}
+
+function importData(e){
+  var file=e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var data=JSON.parse(ev.target.result);
+      if(!data.db) throw new Error('inválido');
+      S.db=data.db;
+      COUNTRIES.forEach(function(c){ if(!S.db[c.code]) S.db[c.code]=makeRecord(c); });
+      saveDB(); updateGlobal(); toast('✅ Datos restaurados'); changeTab('faltan');
+    }catch(err){ toast('❌ Archivo inválido'); }
+  };
+  reader.readAsText(file);
+}
+
+function render(){
+  var grid=document.getElementById('grid');
+  var sv=document.getElementById('stats-view');
+  var shv=document.getElementById('share-view');
+  var bkv=document.getElementById('backup-view');
+  var nr=document.getElementById('no-results');
+  var bwrap=document.getElementById('back-wrap');
+  var swrap=document.getElementById('sort-wrap');
+  var footer=document.getElementById('footer');
+
+  // Ocultar todo
+  grid.style.display='none';
+  sv.style.display='none';
+  shv.style.display='none';
+  bkv.style.display='none';
+  nr.style.display='none';
+  bwrap.style.display='none';
+  swrap.style.display='none';
+  footer.style.display='block';
+
+  if(S.tab==='stats'){ renderStats(); footer.style.display='none'; return; }
+  if(S.tab==='share'){ renderShare(); footer.style.display='none'; return; }
+  if(S.tab==='backup'){ renderBackup(); footer.style.display='none'; return; }
+
+  // Obtener items según nivel
+  var items = S.level===1 ? getCountryList() : getStickerList(S.country);
+
+  var totalPages=Math.max(1,Math.ceil(items.length/PER_PAGE));
+  if(S.page>=totalPages) S.page=totalPages-1;
+  if(S.page<0) S.page=0;
+
+  document.getElementById('page-text').textContent='Pág. '+(items.length?S.page+1:0)+' de '+totalPages;
+  document.getElementById('prev-btn').disabled=S.page===0;
+  document.getElementById('next-btn').disabled=S.page>=totalPages-1||!items.length;
+
+  var dots=document.getElementById('dots'); dots.innerHTML='';
+  for(var d=0;d<Math.min(totalPages,7);d++){
+    var dot=document.createElement('div');
+    dot.className='dot'+(d===S.page?' active':'');
+    dots.appendChild(dot);
+  }
+
+  // Mostrar/ocultar elementos de navegación
+  bwrap.style.display=S.level===2?'block':'none';
+  if(S.level===1) swrap.style.display='flex';
+  if(S.level===2) document.getElementById('back-label').textContent=S.country.code+' — '+S.country.name+' (Pág. '+S.country.page+')';
+
+  if(!items.length){
+    nr.style.display='block';
+    updateGlobal();
+    return;
+  }
+
+  var slice=items.slice(S.page*PER_PAGE,(S.page+1)*PER_PAGE);
+  grid.innerHTML='';
+  grid.style.display='grid';
+
+  if(S.level===1){
+    slice.forEach(function(c){
+      var o=countOwned(c), t=countTotal(c), pct=Math.round(o/t*100);
+      var isComplete=(o===t);
+      var fi=c.iso==='fwc'?'<span>✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" alt="'+c.name+'" onerror="this.style.display=\'none\'">';
+      var div=document.createElement('div');
+      div.className='country-card'+(isComplete?' complete':'');
+      div.innerHTML=(isComplete?'<div class="complete-badge">★ COMPLETO</div>':'')+
+        '<div class="flag-circle">'+fi+'</div>'+
+        '<div class="country-code">'+c.code+'</div>'+
+        '<div class="country-page">Pág. '+c.page+'</div>'+
+        '<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="progress-count">'+o+'/'+t+'</div>';
+      div.onclick=function(cc){return function(){S.level=2;S.country=cc;S.page=0;render();};}(c);
+      grid.appendChild(div);
+    });
+  } else {
+    var c=S.country;
+    slice.forEach(function(n){
+      var rec=S.db[c.code];
+      var have=rec.owned[n]===true;
+      var rep=rec.repes[n]||0;
+      var numLabel=n===0?'00':String(n);
+      var div=document.createElement('div');
+      div.className='sticker-card '+(have?'tengo':'falta');
+      div.innerHTML=(rep>0?'<div class="repe-badge">+'+rep+'</div>':'')+
+        '<div class="sticker-top">'+
+          '<div class="sticker-num">'+c.code+' '+numLabel+'</div>'+
+          '<div class="sticker-label">'+stickerLabel(c,n)+'</div>'+
+          '<div class="sticker-status '+(have?'tengo':'falta')+'">'+
+            '<i class="fa-solid '+(have?'fa-check':'fa-minus')+'"></i> '+(have?'Tengo':'Falta')+
+          '</div>'+
+        '</div>'+
+        '<div class="repe-ctrl">'+
+          '<button class="repe-btn minus" onclick="changeRepe('+n+',-1)"><i class="fa-solid fa-minus"></i></button>'+
+          '<span class="repe-lbl">REPE</span>'+
+          '<button class="repe-btn plus" onclick="changeRepe('+n+',1)"><i class="fa-solid fa-plus"></i></button>'+
+        '</div>';
+      grid.appendChild(div);
+    });
+  }
+  updateGlobal();
+}
+
+function changeRepe(n,val){
+  var c=S.country, cc=c.code, rec=S.db[cc], lbl=n===0?'00':String(n);
+  var have=rec.owned[n]===true;
+  var rep=rec.repes[n]||0;
+
+  if(val>0){
+    if(!have){ rec.owned[n]=true; toast('✅ Tengo '+cc+' '+lbl); }
+    else{ rec.repes[n]=rep+1; toast('🔁 Repe +1 — '+cc+' '+lbl); }
+  } else {
+    if(rep>0){ rec.repes[n]=rep-1; toast('➖ Repe -1 — '+cc+' '+lbl); }
+    else if(have){ rec.owned[n]=false; rec.repes[n]=0; toast('❌ '+cc+' '+lbl+' vuelve a Faltan'); }
+    else { return; }
+  }
+  saveDB();
+  updateGlobal();
+  render();
+}
+
+function goBack(){S.level=1;S.country=null;S.page=0;render();}
+function nextPage(){S.page++;render();}
+function prevPage(){if(S.page>0){S.page--;render();}}
+
+var si=document.getElementById('search-input'),cb=document.getElementById('clear-btn');
+si.addEventListener('input',function(e){
+  S.q=e.target.value; S.page=0;
+  cb.style.display=S.q?'block':'none';
+  // Si hay espacio, buscar lámina específica
+  var q=S.q.trim().toLowerCase();
+  if(q.indexOf(' ')>-1){
+    var pts=q.split(' '), num=parseInt(pts[1]), found=null;
+    COUNTRIES.forEach(function(c){ if(c.code.toLowerCase()===pts[0]||c.name.toLowerCase().indexOf(pts[0])>-1) found=c; });
+    if(found&&!isNaN(num)&&num>=found.from&&num<=found.to){
+      S.level=2; S.country=found;
+      S.page=Math.floor((num-found.from)/PER_PAGE);
+      S.q=''; si.value=''; cb.style.display='none';
+    }
+  }
+  render();
+});
+cb.addEventListener('click',function(){si.value='';S.q='';cb.style.display='none';render();});
+
+var tx=0;
+document.getElementById('main').addEventListener('touchstart',function(e){tx=e.changedTouches[0].screenX;},{passive:true});
+document.getElementById('main').addEventListener('touchend',function(e){
+  var d=tx-e.changedTouches[0].screenX;
+  if(Math.abs(d)>60){d>0?nextPage():prevPage();}
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){ navigator.serviceWorker.register('/sw.js'); });
+}
+
+initDB();
+</script>
+</body>
+</html>
