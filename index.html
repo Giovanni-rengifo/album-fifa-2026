@@ -39,7 +39,7 @@ header{background:#050f0a;border-bottom:1px solid #12301c;padding:8px 12px;posit
 main{flex:1;overflow-y:auto;padding:10px 12px;-webkit-overflow-scrolling:touch}
 .back-btn{display:none;margin-bottom:8px}
 .back-btn button{font-size:12px;font-weight:700;color:#facc15;background:#12301c;padding:5px 12px;border-radius:12px;border:1px solid #1b472c;display:flex;align-items:center;gap:5px;cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .country-card{background:#0d2416;border:1px solid #1b472c;border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .1s;text-align:center;position:relative}
 .country-card:active{transform:scale(.95)}
 .country-card.complete{border-color:#eab308;box-shadow:0 0 0 1px rgba(234,179,8,.3)}
@@ -220,7 +220,7 @@ var COUNTRIES = COUNTRIES_RAW.map(function(c){
 });
 COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,to:19});
 
-var PER_PAGE = 12;
+var PER_PAGE = 15;
 var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
 
 // Crear registro limpio para un país
