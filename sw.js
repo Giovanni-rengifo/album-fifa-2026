@@ -1,4 +1,4 @@
-const CACHE = 'road2026-v2';
+const CACHE = 'road2026-' + Date.now();
 const ASSETS = [
   '/album-fifa-2026/',
   '/album-fifa-2026/index.html',
