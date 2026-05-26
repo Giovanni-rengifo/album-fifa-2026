@@ -55,6 +55,10 @@ main{padding:10px 12px;-webkit-overflow-scrolling:touch}
 .sticker-card{border:1px solid;border-radius:16px;padding:10px 8px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;position:relative;min-height:110px}
 .sticker-card.tengo{background:#123a1f;border-color:rgba(34,197,94,.6)}
 .sticker-card.falta{background:#151f19;border-color:rgba(127,29,29,.3);opacity:.8}
+.sticker-card.escudo.tengo{background:#0d2a4a;border-color:rgba(59,130,246,.6)}
+.sticker-card.escudo.falta{background:#0a1e33;border-color:rgba(59,130,246,.2)}
+.sticker-card.equipo.tengo{background:#2d1a4a;border-color:rgba(139,92,246,.6)}
+.sticker-card.equipo.falta{background:#1e1230;border-color:rgba(139,92,246,.2)}
 .sticker-top{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:3px}
 .sticker-num{font-weight:900;font-size:14px;color:#fff}
 .sticker-label{font-size:11px;color:#d1d5db;text-align:center}
@@ -533,7 +537,8 @@ function render(){
       var rep=rec.repes[n]||0;
       var numLabel=n===0?'00':String(n);
       var div=document.createElement('div');
-      div.className='sticker-card '+(have?'tengo':'falta');
+      var specialClass=n===1?' escudo':n===13?' equipo':'';
+      div.className='sticker-card'+specialClass+' '+(have?'tengo':'falta');
       div.innerHTML=(rep>0?'<div class="repe-badge">+'+rep+'</div>':'')+
         '<div class="sticker-top">'+
           '<div class="sticker-num">'+c.code+' '+numLabel+'</div>'+
