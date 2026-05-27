@@ -57,6 +57,8 @@ main{padding:10px 12px;-webkit-overflow-scrolling:touch}
 .sticker-card.falta{background:#151f19;border-color:rgba(127,29,29,.3);opacity:.8}
 .sticker-card.escudo.tengo{background:#0d2a4a;border-color:rgba(59,130,246,.6)}
 .sticker-card.escudo.falta{background:#0a1e33;border-color:rgba(59,130,246,.2)}
+.sticker-card.arquero.tengo{background:#0d3a2a;border-color:rgba(20,184,166,.6)}
+.sticker-card.arquero.falta{background:#0a2620;border-color:rgba(20,184,166,.2)}
 .sticker-card.equipo.tengo{background:#2d1a4a;border-color:rgba(139,92,246,.6)}
 .sticker-card.equipo.falta{background:#1e1230;border-color:rgba(139,92,246,.2)}
 .sticker-top{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:3px}
@@ -452,6 +454,7 @@ function importData(e){
       COUNTRIES.forEach(function(c){ if(!S.db[c.code]) S.db[c.code]=makeRecord(c); });
       saveDB(); updateGlobal(); toast('✅ Datos restaurados'); changeTab('faltan');
     }catch(err){ toast('❌ Archivo inválido'); }
+    e.target.value='';
   };
   reader.readAsText(file);
 }
@@ -537,7 +540,7 @@ function render(){
       var rep=rec.repes[n]||0;
       var numLabel=n===0?'00':String(n);
       var div=document.createElement('div');
-      var specialClass=n===1?' escudo':n===13?' equipo':'';
+      var specialClass=n===1?' escudo':n===2?' arquero':n===13?' equipo':'';
       div.className='sticker-card'+specialClass+' '+(have?'tengo':'falta');
       div.innerHTML=(rep>0?'<div class="repe-badge">+'+rep+'</div>':'')+
         '<div class="sticker-top">'+
@@ -572,7 +575,6 @@ function changeRepe(n,val){
     else { return; }
   }
   saveDB();
-  updateGlobal();
   render();
 }
 
