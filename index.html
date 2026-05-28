@@ -10,48 +10,71 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Road 2026">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://flagcdn.com">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+:root{
+  --bg-page:#091a10;
+  --bg-surface:#050f0a;
+  --bg-card:#0d2416;
+  --border:#1b472c;
+  --border-soft:#12301c;
+  --border-tabs:#153a22;
+  --accent:#facc15;
+  --white:oklch(99% 0.008 145);
+  --black:oklch(8% 0.008 145);
+  --text-muted:#9ca3af;
+  --text-dim:#6b7280;
+  --text-dimmer:#4b5563;
+  --green:#22c55e;
+  --green-bright:#4ade80;
+  --red:#f87171;
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:#091a10;color:#fff;font-family:system-ui,sans-serif;min-height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+*:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+*:focus:not(:focus-visible){outline:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body{background:var(--bg-page);color:var(--white);font-family:system-ui,sans-serif;min-height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 #app{display:flex;flex-direction:column;min-height:100dvh;max-width:480px;margin:0 auto;width:100%}
-header{background:#050f0a;border-bottom:1px solid #12301c;padding:8px 12px;position:sticky;top:0;z-index:50;flex-shrink:0}
+header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);padding:8px 12px;position:sticky;top:0;z-index:50;flex-shrink:0}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
-.header-title{font-size:15px;font-weight:900;letter-spacing:.05em;color:#facc15;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.header-title{font-size:0.9375rem;font-weight:900;letter-spacing:.05em;color:var(--accent);display:flex;align-items:center;gap:6px;flex-shrink:0}
 .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0;flex:1}
-.global-badge{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);color:#facc15;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.global-badge{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);color:var(--accent);font-size:0.6875rem;font-weight:700;padding:3px 10px;border-radius:999px;display:flex;align-items:center;gap:4px;white-space:nowrap}
 .global-progress-wrap{width:100%;background:rgba(0,0,0,.4);height:6px;border-radius:999px;overflow:hidden}
-.global-progress-fill{background:linear-gradient(90deg,#16a34a,#facc15);height:100%;border-radius:999px;transition:width .4s ease}
+.global-progress-fill{background:linear-gradient(90deg,#16a34a,var(--accent));height:100%;border-radius:999px;width:100%;transform:scaleX(0);transform-origin:left;transition:transform .4s ease}
 .search-wrap{position:relative;margin-bottom:8px}
-.search-wrap .sicon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#6b7280;font-size:12px;pointer-events:none}
-#search-input{width:100%;background:#0d2416;border:1px solid #1b472c;color:#fff;font-size:12px;border-radius:12px;padding:7px 32px 7px 30px;outline:none}
-#search-input:focus{border-color:#facc15}
-#search-input::placeholder{color:#4b5563}
-#clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6b7280;cursor:pointer;display:none;font-size:13px;padding:2px}
-.tabs{display:flex;background:#0d2416;padding:4px;border-radius:12px;border:1px solid #153a22;gap:2px}
-.tab{flex:1;padding:7px 4px;font-size:11px;font-weight:700;border-radius:8px;border:none;cursor:pointer;transition:all .15s;background:none;color:#9ca3af}
-.tab.active-faltan{background:#7f1d1d;color:#fff}
-.tab.active-tengo{background:#14532d;color:#fff}
-.tab.active-repes{background:#78350f;color:#000}
-.tab.active-stats{background:#1e3a5f;color:#fff}
-.tab.active-share{background:#4a1d96;color:#fff}
-.tab.active-backup{background:#1e3a5f;color:#fff}
+.search-wrap .sicon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:0.75rem;pointer-events:none}
+#search-input{width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--white);font-size:0.75rem;border-radius:12px;padding:7px 32px 7px 30px;outline:none}
+#search-input:focus{border-color:var(--accent)}
+#search-input::placeholder{color:var(--text-dimmer)}
+#clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-dim);cursor:pointer;display:none;font-size:0.8125rem;padding:2px}
+.tabs{display:flex;background:var(--bg-card);padding:4px;border-radius:12px;border:1px solid var(--border-tabs);gap:2px}
+.tab{flex:1;padding:7px 4px;font-size:0.6875rem;font-weight:700;border-radius:8px;border:none;cursor:pointer;transition:background-color .15s,color .15s;background:none;color:var(--text-muted)}
+.tab.active-faltan{background:#7f1d1d;color:var(--white)}
+.tab.active-tengo{background:#14532d;color:var(--white)}
+.tab.active-repes{background:#78350f;color:var(--black)}
+.tab.active-stats{background:#1e3a5f;color:var(--white)}
+.tab.active-share{background:#4a1d96;color:var(--white)}
+.tab.active-backup{background:#1e3a5f;color:var(--white)}
 main{padding:10px 12px;-webkit-overflow-scrolling:touch}
 .back-btn{display:none;margin-bottom:8px}
-.back-btn button{font-size:12px;font-weight:700;color:#facc15;background:#12301c;padding:5px 12px;border-radius:12px;border:1px solid #1b472c;display:flex;align-items:center;gap:5px;cursor:pointer}
+.back-btn button{font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--border-soft);padding:5px 12px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:5px;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.country-card{background:#0d2416;border:1px solid #1b472c;border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .1s;text-align:center;position:relative}
+.country-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform .1s;text-align:center;position:relative;appearance:none;-webkit-appearance:none;font-family:inherit;color:inherit;width:100%}
+.country-card:hover{background:#0f2d1c}
 .country-card:active{transform:scale(.95)}
-.country-card.complete{border-color:#eab308;box-shadow:0 0 0 1px rgba(234,179,8,.3)}
-.complete-badge{position:absolute;top:3px;right:3px;background:#eab308;color:#000;font-size:7px;font-weight:900;padding:1px 3px;border-radius:3px}
+.country-card.complete{border-color:var(--accent);box-shadow:0 0 0 1px rgba(234,179,8,.3)}
+.complete-badge{position:absolute;top:3px;right:3px;background:var(--accent);color:var(--black);font-size:7px;font-weight:900;padding:1px 3px;border-radius:3px}
 .flag-circle{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:2px;flex-shrink:0}
 .flag-circle img{width:34px;height:34px;object-fit:cover;border-radius:50%}
-.flag-circle span{font-size:16px}
-.country-code{font-weight:900;font-size:11px;letter-spacing:.03em}
-.country-page{font-size:10px;color:#9ca3af}
+.flag-circle span{font-size:1rem}
+.country-code{font-weight:900;font-size:0.6875rem;letter-spacing:.03em}
+.country-page{font-size:0.625rem;color:var(--text-muted)}
 .progress-bar{width:100%;background:rgba(0,0,0,.4);height:5px;border-radius:999px;overflow:hidden;margin-top:3px}
-.progress-fill{background:#22c55e;height:100%;border-radius:999px}
-.progress-count{font-size:10px;color:#eab308;font-weight:700;margin-top:2px}
+.progress-fill{background:var(--green);height:100%;border-radius:999px;width:100%;transform:scaleX(0);transform-origin:left}
+.progress-count{font-size:0.625rem;color:var(--accent);font-weight:700;margin-top:2px}
 .sticker-card{border:1px solid;border-radius:16px;padding:10px 8px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;position:relative;min-height:110px}
 .sticker-card.tengo{background:#123a1f;border-color:rgba(34,197,94,.6)}
 .sticker-card.falta{background:#151f19;border-color:rgba(127,29,29,.3);opacity:.8}
@@ -62,58 +85,59 @@ main{padding:10px 12px;-webkit-overflow-scrolling:touch}
 .sticker-card.equipo.tengo{background:#2d1a4a;border-color:rgba(139,92,246,.6)}
 .sticker-card.equipo.falta{background:#1e1230;border-color:rgba(139,92,246,.2)}
 .sticker-top{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:3px}
-.sticker-num{font-weight:900;font-size:14px;color:#fff}
-.sticker-label{font-size:11px;color:#d1d5db;text-align:center}
-.sticker-status{font-size:11px;font-weight:800;display:flex;align-items:center;gap:3px;justify-content:center}
-.sticker-status.tengo{color:#4ade80}
-.sticker-status.falta{color:#f87171}
-.repe-badge{position:absolute;top:5px;right:5px;background:#eab308;color:#000;font-size:9px;font-weight:900;padding:2px 5px;border-radius:6px}
+.sticker-num{font-weight:900;font-size:0.875rem;color:var(--white)}
+.sticker-label{font-size:0.6875rem;color:#d1d5db;text-align:center}
+.sticker-status{font-size:0.6875rem;font-weight:800;display:flex;align-items:center;gap:3px;justify-content:center}
+.sticker-status.tengo{color:var(--green-bright)}
+.sticker-status.falta{color:var(--red)}
+.repe-badge{position:absolute;top:5px;right:5px;background:var(--accent);color:var(--black);font-size:9px;font-weight:900;padding:2px 5px;border-radius:6px}
 .repe-ctrl{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3);border-radius:8px;padding:3px;gap:4px;margin-top:4px}
-.repe-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:none;border-radius:6px;font-size:13px;cursor:pointer;transition:all .1s;flex-shrink:0}
+.repe-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:none;border-radius:6px;font-size:0.8125rem;cursor:pointer;transition:background-color .1s,color .1s;flex-shrink:0;position:relative}
+.repe-btn::after{content:'';position:absolute;inset:-9px}
 .repe-btn:active{transform:scale(.88)}
-.repe-btn.minus{background:rgba(127,29,29,.25);color:#f87171}
-.repe-btn.plus{background:rgba(20,83,45,.25);color:#4ade80}
-.repe-lbl{font-size:9px;font-weight:900;color:#6b7280;letter-spacing:.05em}
+.repe-btn.minus{background:rgba(127,29,29,.25);color:var(--red)}
+.repe-btn.plus{background:rgba(20,83,45,.25);color:var(--green-bright)}
+.repe-lbl{font-size:9px;font-weight:900;color:var(--text-dim);letter-spacing:.05em}
 .stats-section{margin-bottom:16px}
-.stats-title{font-size:11px;font-weight:900;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.stats-title{font-size:0.6875rem;font-weight:900;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.stat-card{background:#0d2416;border:1px solid #1b472c;border-radius:14px;padding:12px 10px;text-align:center}
-.stat-val{font-size:22px;font-weight:900;color:#facc15;line-height:1}
-.stat-lbl{font-size:10px;color:#6b7280;margin-top:4px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center}
+.stat-val{font-size:1.375rem;font-weight:900;color:var(--accent);line-height:1}
+.stat-lbl{font-size:0.625rem;color:var(--text-dim);margin-top:4px}
 .country-rank{display:flex;flex-direction:column;gap:5px}
-.rank-row{display:flex;align-items:center;gap:8px;background:#0d2416;border:1px solid #1b472c;border-radius:10px;padding:7px 10px}
+.rank-row{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:7px 10px}
 .rank-flag{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
 .rank-flag img{width:28px;height:28px;object-fit:cover;border-radius:50%}
 .rank-info{flex:1;min-width:0}
-.rank-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-name{font-size:0.75rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank-bar-wrap{width:100%;background:rgba(0,0,0,.4);height:4px;border-radius:999px;overflow:hidden;margin-top:3px}
-.rank-bar-fill{height:100%;border-radius:999px;background:#22c55e}
-.rank-pct{font-size:11px;font-weight:900;color:#facc15;flex-shrink:0;min-width:34px;text-align:right}
-.share-box{background:#0d2416;border:1px solid #1b472c;border-radius:14px;padding:12px;margin-bottom:14px}
-.share-box textarea{width:100%;background:#091a10;border:1px solid #1b472c;color:#d1fae5;font-size:11px;border-radius:8px;padding:8px;resize:none;outline:none;font-family:monospace;line-height:1.5}
-.share-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-top:8px;transition:all .15s}
+.rank-bar-fill{height:100%;border-radius:999px;background:var(--green);width:100%;transform:scaleX(0);transform-origin:left}
+.rank-pct{font-size:0.6875rem;font-weight:900;color:var(--accent);flex-shrink:0;min-width:34px;text-align:right}
+.share-box{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:14px}
+.share-box textarea{width:100%;background:var(--bg-page);border:1px solid var(--border);color:#d1fae5;font-size:0.6875rem;border-radius:8px;padding:8px;resize:none;outline:none;font-family:monospace;line-height:1.5}
+.share-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:none;border-radius:10px;font-size:0.8125rem;font-weight:800;cursor:pointer;margin-top:8px;transition:opacity .15s,transform .15s}
 .share-btn:active{transform:scale(.97)}
-.share-btn.green{background:#16a34a;color:#fff}
-.share-btn.purple{background:#7c3aed;color:#fff}
-.share-btn.blue{background:#1d4ed8;color:#fff}
-.share-lbl{font-size:11px;font-weight:700;color:#6b7280;margin-bottom:6px}
+.share-btn.green{background:#16a34a;color:var(--white)}
+.share-btn.purple{background:#7c3aed;color:var(--white)}
+.share-btn.blue{background:#1d4ed8;color:var(--white)}
+.share-lbl{font-size:0.6875rem;font-weight:700;color:var(--text-dim);margin-bottom:6px}
 .sort-bar{display:flex;gap:6px;margin-bottom:10px}
-.sort-btn{flex:1;padding:5px;font-size:10px;font-weight:700;border-radius:8px;border:1px solid #1b472c;background:#0d2416;color:#9ca3af;cursor:pointer;transition:all .15s}
-.sort-btn.active{background:#1b472c;color:#facc15;border-color:#facc15}
-.no-results{display:none;text-align:center;padding:48px 0;color:#4b5563;font-size:13px}
-.no-results i{font-size:32px;margin-bottom:8px;display:block}
-footer{background:#050f0a;border-top:1px solid #12301c;padding:10px 16px 20px;flex-shrink:0}
+.sort-btn{flex:1;padding:5px;font-size:0.625rem;font-weight:700;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}
+.sort-btn.active{background:var(--border);color:var(--accent);border-color:var(--accent)}
+.no-results{display:none;text-align:center;padding:48px 0;color:var(--text-dimmer);font-size:0.8125rem}
+.no-results i{font-size:2rem;margin-bottom:8px;display:block}
+footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padding:10px 16px 20px;flex-shrink:0}
 .foot-inner{display:flex;align-items:center;justify-content:space-between;max-width:340px;margin:0 auto}
-.nav-btn{width:40px;height:40px;border-radius:12px;background:#0d2416;border:1px solid #1b472c;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .1s;color:#fff}
+.nav-btn{width:44px;height:44px;border-radius:12px;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.875rem;transition:background-color .1s,transform .1s;color:var(--white)}
 .nav-btn:disabled{opacity:.2;cursor:default}
 .nav-btn:not(:disabled):active{transform:scale(.9)}
 .page-info{text-align:center}
-.page-text{font-size:10px;color:#6b7280;font-weight:600;margin-bottom:5px}
+.page-text{font-size:0.625rem;color:var(--text-dim);font-weight:600;margin-bottom:5px}
 .dots{display:flex;justify-content:center;gap:4px;align-items:center}
-.dot{height:5px;border-radius:999px;background:#1b472c;transition:all .2s}
-.dot.active{background:#facc15;width:12px}
-.dot:not(.active){width:5px}
-#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#facc15;color:#000;padding:7px 18px;border-radius:999px;font-size:11px;font-weight:900;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
+.dot{height:5px;width:12px;border-radius:999px;background:var(--border);transition:transform .2s,background-color .2s;transform-origin:center}
+.dot.active{background:var(--accent);transform:scaleX(1)}
+.dot:not(.active){transform:scaleX(0.417)}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--black);padding:7px 18px;border-radius:999px;font-size:0.6875rem;font-weight:900;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 #toast.show{opacity:1}
 </style>
 </head>
@@ -121,29 +145,30 @@ footer{background:#050f0a;border-top:1px solid #12301c;padding:10px 16px 20px;fl
 <div id="app">
 <header>
   <div class="header-top">
-    <div class="header-title"><i class="fa-solid fa-trophy" style="color:#eab308"></i> ROAD TO 2026</div>
+    <div class="header-title"><i class="fa-solid fa-trophy" style="color:#eab308" aria-hidden="true"></i> ROAD TO 2026</div>
     <div class="header-right">
-      <div class="global-badge"><i class="fa-solid fa-chart-line"></i> <span id="global-counter">0/980 (0%)</span></div>
-      <div class="global-progress-wrap"><div class="global-progress-fill" id="global-bar" style="width:0%"></div></div>
+      <div class="global-badge"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> <span id="global-counter">0/980 (0%)</span></div>
+      <div class="global-progress-wrap"><div class="global-progress-fill" id="global-bar"></div></div>
     </div>
   </div>
   <div class="search-wrap">
-    <i class="fa-solid fa-magnifying-glass sicon"></i>
+    <i class="fa-solid fa-magnifying-glass sicon" aria-hidden="true"></i>
+    <label for="search-input" class="sr-only">Buscar país o lámina</label>
     <input type="text" id="search-input" placeholder="Buscar país o lámina (ej: COL 13)...">
-    <button id="clear-btn"><i class="fa-solid fa-circle-xmark"></i></button>
+    <button id="clear-btn" aria-label="Limpiar búsqueda"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
   </div>
-  <div class="tabs">
-    <button class="tab" id="tab-faltan" onclick="changeTab('faltan')">Faltan (<span id="cnt-faltan">0</span>)</button>
-    <button class="tab" id="tab-tengo" onclick="changeTab('tengo')">Tengo (<span id="cnt-tengo">0</span>)</button>
-    <button class="tab" id="tab-repes" onclick="changeTab('repes')">Repes (<span id="cnt-repes">0</span>)</button>
-    <button class="tab" id="tab-stats" onclick="changeTab('stats')"><i class="fa-solid fa-chart-pie"></i></button>
-    <button class="tab" id="tab-share" onclick="changeTab('share')"><i class="fa-brands fa-whatsapp"></i></button>
-    <button class="tab" id="tab-backup" onclick="changeTab('backup')"><i class="fa-solid fa-database"></i></button>
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')">Faltan (<span id="cnt-faltan">0</span>)</button>
+    <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')">Tengo (<span id="cnt-tengo">0</span>)</button>
+    <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')">Repes (<span id="cnt-repes">0</span>)</button>
+    <button class="tab" id="tab-stats" role="tab" aria-selected="false" onclick="changeTab('stats')"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="sr-only">Estadísticas</span></button>
+    <button class="tab" id="tab-share" role="tab" aria-selected="false" onclick="changeTab('share')"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span class="sr-only">Compartir</span></button>
+    <button class="tab" id="tab-backup" role="tab" aria-selected="false" onclick="changeTab('backup')"><i class="fa-solid fa-database" aria-hidden="true"></i><span class="sr-only">Backup</span></button>
   </div>
 </header>
 <main id="main">
   <div class="back-btn" id="back-wrap">
-    <button onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> <span id="back-label">Volver</span></button>
+    <button onclick="goBack()"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> <span id="back-label">Volver</span></button>
   </div>
   <div id="sort-wrap" class="sort-bar" style="display:none">
     <button class="sort-btn active" id="sort-az" onclick="setSort('az')">A–Z</button>
@@ -153,20 +178,20 @@ footer{background:#050f0a;border-top:1px solid #12301c;padding:10px 16px 20px;fl
   <div id="stats-view" style="display:none"></div>
   <div id="share-view" style="display:none"></div>
   <div id="backup-view" style="display:none"></div>
-  <div class="no-results" id="no-results"><i class="fa-regular fa-folder-open"></i><p>Sin resultados</p></div>
+  <div class="no-results" id="no-results"><i class="fa-regular fa-folder-open" aria-hidden="true"></i><p>Sin resultados</p></div>
 </main>
 <footer id="footer">
   <div class="foot-inner">
-    <button class="nav-btn" id="prev-btn" onclick="prevPage()" disabled><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="nav-btn" id="prev-btn" onclick="prevPage()" disabled aria-label="Página anterior"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
     <div class="page-info">
       <div class="page-text" id="page-text">Pág. 1 de 1</div>
       <div class="dots" id="dots"></div>
     </div>
-    <button class="nav-btn" id="next-btn" onclick="nextPage()"><i class="fa-solid fa-chevron-right"></i></button>
+    <button class="nav-btn" id="next-btn" onclick="nextPage()" aria-label="Página siguiente"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
   </div>
 </footer>
 </div>
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <script>
 var TOTAL = 980;
 var COUNTRIES_RAW = [
@@ -290,7 +315,7 @@ function updateGlobal(){
   var missing=TOTAL-owned;
   var pct=Math.round(owned/TOTAL*100);
   document.getElementById('global-counter').textContent=owned+'/'+TOTAL+' ('+pct+'%)';
-  document.getElementById('global-bar').style.width=pct+'%';
+  document.getElementById('global-bar').style.transform='scaleX('+pct/100+')';
   document.getElementById('cnt-tengo').textContent=owned;
   document.getElementById('cnt-faltan').textContent=missing;
   document.getElementById('cnt-repes').textContent=repes;
@@ -313,7 +338,9 @@ function setSort(s){
 function changeTab(t){
   S.tab=t; S.page=0;
   ['faltan','tengo','repes','stats','share','backup'].forEach(function(x){
-    document.getElementById('tab-'+x).className='tab'+(x===t?' active-'+x:'');
+    var btn=document.getElementById('tab-'+x);
+    btn.className='tab'+(x===t?' active-'+x:'');
+    btn.setAttribute('aria-selected',x===t?'true':'false');
   });
   render();
 }
@@ -382,10 +409,10 @@ function renderStats(){
   html+='</div></div><div class="stats-section"><div class="stats-title">Ranking por completado</div><div class="country-rank">';
   ranked.forEach(function(c){
     var o=countOwned(c), t=countTotal(c), p=Math.round(o/t*100);
-    var fi=c.iso==='fwc'?'<span style="font-size:16px">✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" style="width:28px;height:28px;object-fit:cover;border-radius:50%">';
+    var fi=c.iso==='fwc'?'<span style="font-size:1rem">✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" loading="lazy" alt="'+c.name+'" style="width:28px;height:28px;object-fit:cover;border-radius:50%">';
     html+='<div class="rank-row"><div class="rank-flag">'+fi+'</div>'+
       '<div class="rank-info"><div class="rank-name">'+c.code+' — '+c.name+'</div>'+
-      '<div class="rank-bar-wrap"><div class="rank-bar-fill" style="width:'+p+'%"></div></div></div>'+
+      '<div class="rank-bar-wrap"><div class="rank-bar-fill" style="transform:scaleX('+p/100+')"></div></div></div>'+
       '<div class="rank-pct">'+p+'%</div></div>';
   });
   html+='</div></div>';
@@ -410,10 +437,10 @@ function renderShare(){
   sv.innerHTML=
     '<div class="share-box"><div class="share-lbl">📋 Me faltan estas láminas:</div>'+
     '<textarea id="txt-faltan" rows="6" readonly>'+fLines.join('\n')+'</textarea>'+
-    '<button class="share-btn green" onclick="copyShare(\'faltan\')"><i class="fa-brands fa-whatsapp"></i> Copiar "Me faltan"</button></div>'+
+    '<button class="share-btn green" onclick="copyShare(\'faltan\')"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Copiar "Me faltan"</button></div>'+
     '<div class="share-box"><div class="share-lbl">🔁 Tengo de más para dar:</div>'+
     '<textarea id="txt-repes" rows="6" readonly>'+rLines.join('\n')+'</textarea>'+
-    '<button class="share-btn purple" onclick="copyShare(\'repes\')"><i class="fa-brands fa-whatsapp"></i> Copiar "Tengo de más"</button></div>';
+    '<button class="share-btn purple" onclick="copyShare(\'repes\')"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Copiar "Tengo de más"</button></div>';
 }
 
 function copyShare(type){
@@ -427,11 +454,11 @@ function renderBackup(){
   bkv.innerHTML=
     '<div class="share-box"><div class="stats-title" style="margin-bottom:8px">💾 Exportar datos</div>'+
     '<div class="share-lbl">Descarga un archivo con todo tu progreso.</div>'+
-    '<button class="share-btn green" onclick="exportData()"><i class="fa-solid fa-download"></i> Descargar respaldo</button></div>'+
+    '<button class="share-btn green" onclick="exportData()"><i class="fa-solid fa-download" aria-hidden="true"></i> Descargar respaldo</button></div>'+
     '<div class="share-box"><div class="stats-title" style="margin-bottom:8px">📂 Importar datos</div>'+
     '<div class="share-lbl">Restaura tu progreso desde un respaldo.<br><strong style="color:#f87171">Reemplazará tus datos actuales.</strong></div>'+
     '<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">'+
-    '<button class="share-btn blue" onclick="document.getElementById(\'import-file\').click()"><i class="fa-solid fa-upload"></i> Cargar respaldo</button></div>';
+    '<button class="share-btn blue" onclick="document.getElementById(\'import-file\').click()"><i class="fa-solid fa-upload" aria-hidden="true"></i> Cargar respaldo</button></div>';
 }
 
 function exportData(){
@@ -520,17 +547,18 @@ function render(){
     slice.forEach(function(c){
       var o=countOwned(c), t=countTotal(c), pct=Math.round(o/t*100);
       var isComplete=(o===t);
-      var fi=c.iso==='fwc'?'<span>✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" alt="'+c.name+'" onerror="this.style.display=\'none\'">';
-      var div=document.createElement('div');
-      div.className='country-card'+(isComplete?' complete':'');
-      div.innerHTML=(isComplete?'<div class="complete-badge">★ COMPLETO</div>':'')+
+      var fi=c.iso==='fwc'?'<span>✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" alt="'+c.name+'" loading="lazy" onerror="this.style.display=\'none\'">';
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='country-card'+(isComplete?' complete':'');
+      btn.innerHTML=(isComplete?'<div class="complete-badge">★ COMPLETO</div>':'')+
         '<div class="flag-circle">'+fi+'</div>'+
         '<div class="country-code">'+c.code+'</div>'+
         '<div class="country-page">Pág. '+c.page+'</div>'+
-        '<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="progress-bar"><div class="progress-fill" style="transform:scaleX('+pct/100+')"></div></div>'+
         '<div class="progress-count">'+o+'/'+t+'</div>';
-      div.onclick=function(cc){return function(){S.level=2;S.country=cc;S.page=0;render();};}(c);
-      grid.appendChild(div);
+      btn.onclick=function(cc){return function(){S.level=2;S.country=cc;S.page=0;render();};}(c);
+      grid.appendChild(btn);
     });
   } else {
     var c=S.country;
@@ -547,13 +575,13 @@ function render(){
           '<div class="sticker-num">'+c.code+' '+numLabel+'</div>'+
           '<div class="sticker-label">'+stickerLabel(c,n)+'</div>'+
           '<div class="sticker-status '+(have?'tengo':'falta')+'">'+
-            '<i class="fa-solid '+(have?'fa-check':'fa-minus')+'"></i> '+(have?'Tengo':'Falta')+
+            '<i class="fa-solid '+(have?'fa-check':'fa-minus')+'" aria-hidden="true"></i> '+(have?'Tengo':'Falta')+
           '</div>'+
         '</div>'+
         '<div class="repe-ctrl">'+
-          '<button class="repe-btn minus" onclick="changeRepe('+n+',-1)"><i class="fa-solid fa-minus"></i></button>'+
+          '<button type="button" class="repe-btn minus" onclick="changeRepe('+n+',-1)" aria-label="Quitar lámina '+numLabel+'"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>'+
           '<span class="repe-lbl">REPE</span>'+
-          '<button class="repe-btn plus" onclick="changeRepe('+n+',1)"><i class="fa-solid fa-plus"></i></button>'+
+          '<button type="button" class="repe-btn plus" onclick="changeRepe('+n+',1)" aria-label="Agregar lámina '+numLabel+'"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>'+
         '</div>';
       grid.appendChild(div);
     });
