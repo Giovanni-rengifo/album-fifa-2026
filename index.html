@@ -64,21 +64,21 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .tab.active-stats{background:#1e3a5f;color:var(--white)}
 .tab.active-share{background:#4a1d96;color:var(--white)}
 .tab.active-backup{background:#1e3a5f;color:var(--white)}
-main{padding:10px 12px;-webkit-overflow-scrolling:touch}
+main{padding:10px 12px;-webkit-overflow-scrolling:touch;flex:1}
 .back-btn{display:none;margin-bottom:8px}
 .back-btn button{font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--border-soft);padding:5px 12px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:5px;cursor:pointer;transition:background-color .15s,border-color .15s}
 .back-btn button:hover{background:var(--bg-hover);border-color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.country-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;text-align:center;position:relative;appearance:none;-webkit-appearance:none;font-family:inherit;color:inherit;width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*10ms)}
-@media (hover:hover) and (pointer:fine){.country-card:hover{background:var(--bg-hover)}}
+.country-card{background:#ffffff;border:1px solid #e2e8e4;border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;text-align:center;position:relative;appearance:none;-webkit-appearance:none;font-family:inherit;color:var(--black);width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*10ms)}
+@media (hover:hover) and (pointer:fine){.country-card:hover{background:#f0fdf4}}
 .country-card:active{transform:scale(.95)}
-.country-card.complete{border-color:var(--accent);box-shadow:0 0 0 1px rgba(234,179,8,.3)}
+.country-card.complete{border-color:var(--accent);box-shadow:0 0 0 1px rgba(234,179,8,.35);background:#fffbeb}
 .complete-badge{position:absolute;top:3px;right:3px;background:var(--accent);color:var(--black);font-size:7px;font-weight:900;padding:1px 3px;border-radius:3px}
 .flag-circle{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:2px;flex-shrink:0}
 .flag-circle img{width:34px;height:34px;object-fit:cover;border-radius:50%}
 .flag-circle span{font-size:1rem}
-.country-code{font-weight:900;font-size:0.6875rem;letter-spacing:.03em}
-.country-page{font-size:0.625rem;color:var(--text-muted)}
+.country-code{font-weight:900;font-size:0.6875rem;letter-spacing:.03em;color:#111827}
+.country-page{font-size:0.625rem;color:#6b7280}
 .progress-bar{width:100%;background:rgba(0,0,0,.4);height:5px;border-radius:999px;overflow:hidden;margin-top:3px}
 .progress-fill{background:var(--green);height:100%;border-radius:999px;width:100%;transform:scaleX(0);transform-origin:left;will-change:transform}
 .progress-count{font-size:0.625rem;color:var(--accent);font-weight:700;margin-top:2px}
@@ -189,10 +189,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
   <div class="back-btn" id="back-wrap">
     <button onclick="goBack()"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> <span id="back-label">Volver</span></button>
   </div>
-  <div id="sort-wrap" class="sort-bar" style="display:none">
-    <button class="sort-btn active" id="sort-az" onclick="setSort('az')">A–Z</button>
-    <button class="sort-btn" id="sort-pct" onclick="setSort('pct')">% Completado</button>
-  </div>
+
   <div class="grid" id="grid"></div>
   <div id="stats-view" style="display:none"></div>
   <div id="share-view" style="display:none"></div>
@@ -347,12 +344,7 @@ function toast(msg){
   clearTimeout(_tt); _tt=setTimeout(function(){e.classList.remove('show');},900);
 }
 
-function setSort(s){
-  S.sort=s; S.page=0;
-  document.getElementById('sort-az').className='sort-btn'+(s==='az'?' active':'');
-  document.getElementById('sort-pct').className='sort-btn'+(s==='pct'?' active':'');
-  render();
-}
+function setSort(s){ S.sort=s; S.page=0; render(); }
 
 function changeTab(t){
   S.tab=t; S.page=0;
@@ -512,7 +504,7 @@ function render(){
   var bkv=document.getElementById('backup-view');
   var nr=document.getElementById('no-results');
   var bwrap=document.getElementById('back-wrap');
-  var swrap=document.getElementById('sort-wrap');
+
   var footer=document.getElementById('footer');
 
   // Ocultar todo
@@ -522,7 +514,6 @@ function render(){
   bkv.style.display='none';
   nr.style.display='none';
   bwrap.style.display='none';
-  swrap.style.display='none';
   footer.style.display='block';
 
   if(S.tab==='stats'){ renderStats(); footer.style.display='none'; return; }
@@ -549,7 +540,6 @@ function render(){
 
   // Mostrar/ocultar elementos de navegación
   bwrap.style.display=S.level===2?'block':'none';
-  if(S.level===1) swrap.style.display='flex';
   if(S.level===2) document.getElementById('back-label').textContent=S.country.code+' — '+S.country.name+' (Pág. '+S.country.page+')';
 
   if(!items.length){
