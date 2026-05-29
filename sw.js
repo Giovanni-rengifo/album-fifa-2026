@@ -1,4 +1,4 @@
-const CACHE = 'road2026-v8';
+const CACHE = 'road2026-v9';
 const ASSETS = [
   '/album-fifa-2026/',
   '/album-fifa-2026/index.html',
@@ -18,7 +18,8 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    ).then(() => self.clients.matchAll({ type: 'window' }))
+     .then(clients => clients.forEach(c => c.navigate(c.url)))
   );
   self.clients.claim();
 });
