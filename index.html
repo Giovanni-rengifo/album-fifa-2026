@@ -76,11 +76,11 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .preview-item i{flex-shrink:0}
 .preview-code{font-weight:900;font-size:0.75rem;min-width:54px}
 .preview-desc{color:var(--text-muted);font-weight:400}
-main{padding:10px 12px;-webkit-overflow-scrolling:touch;flex:1;overflow-y:auto;min-height:0}
+main{padding:10px 12px;-webkit-overflow-scrolling:touch;flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column}
 .back-btn{display:none;margin-bottom:8px}
 .back-btn button{font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--border-soft);padding:5px 12px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:5px;cursor:pointer;transition:background-color .15s,border-color .15s}
 .back-btn button:hover{background:var(--bg-hover);border-color:var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:4px;flex:1}
 .country-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;text-align:center;position:relative;appearance:none;-webkit-appearance:none;font-family:inherit;color:var(--white);width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*10ms)}
 @media (hover:hover) and (pointer:fine){.country-card:hover{background:var(--bg-hover)}}
 .country-card:active{transform:scale(.95)}
