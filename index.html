@@ -71,7 +71,12 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .ag-dd-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 .ag-dd-btn i{flex-shrink:0;margin-left:8px;font-size:0.7rem;color:var(--text-dim);transition:transform .2s}
 .ag-dd-btn.open i{transform:rotate(180deg)}
-.ag-dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.ag-dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;max-height:260px;overflow:hidden;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;flex-direction:column}
+.ag-dd-search{padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ag-dd-search input{width:100%;background:var(--bg-page);border:1px solid var(--border);color:var(--white);font-size:0.8125rem;border-radius:7px;padding:6px 10px;outline:none}
+.ag-dd-search input:focus{border-color:var(--accent)}
+.ag-dd-search input::placeholder{color:var(--text-dimmer)}
+.ag-dd-opts{overflow-y:auto;flex:1}
 .ag-dd-opt{padding:10px 14px;font-size:0.8125rem;cursor:pointer;color:var(--white);transition:background .1s}
 .ag-dd-opt:hover{background:var(--bg-hover);color:var(--accent)}
 .ag-dd-opt.active{background:var(--bg-hover);color:var(--accent);font-weight:700}
@@ -544,7 +549,10 @@ function renderAgregar(){
           '<span id="ag-dd-label">'+selLabel+'</span>'+
           '<i class="fa-solid fa-chevron-down"></i>'+
         '</button>'+
-        '<div class="ag-dd-list" id="ag-dd-list" style="display:none"></div>'+
+        '<div class="ag-dd-list" id="ag-dd-list" style="display:none">'+
+          '<div class="ag-dd-search"><input type="text" id="ag-dd-q" placeholder="Buscar país..." oninput="filterAgDd()" autocomplete="off"></div>'+
+          '<div class="ag-dd-opts" id="ag-dd-opts"></div>'+
+        '</div>'+
       '</div>'+
     '</div>'+
     '<div id="ag-body"></div>';
@@ -554,14 +562,22 @@ function renderAgregar(){
   document.addEventListener('click', agDdOutside);
 }
 
-function buildAgDdList(){
-  var list=document.getElementById('ag-dd-list'); if(!list) return;
-  var html='<div class="ag-dd-opt'+(AG.country?'':' active')+'" onclick="selectAgCountry(null)">— Seleccionar país —</div>';
+function buildAgDdList(q){
+  var opts=document.getElementById('ag-dd-opts'); if(!opts) return;
+  q=(q||'').toLowerCase().trim();
+  var html='';
+  if(!q) html='<div class="ag-dd-opt'+(AG.country?'':' active')+'" onclick="selectAgCountry(null)">— Seleccionar país —</div>';
   COUNTRIES.forEach(function(c){
+    if(q && c.code.toLowerCase().indexOf(q)===-1 && c.name.toLowerCase().indexOf(q)===-1) return;
     var active=AG.country&&AG.country.code===c.code;
     html+='<div class="ag-dd-opt'+(active?' active':'')+'" onclick="selectAgCountry(\''+c.code+'\')">'+c.code+' — '+c.name+'</div>';
   });
-  list.innerHTML=html;
+  opts.innerHTML=html||'<div class="ag-dd-opt" style="color:var(--text-dimmer)">Sin resultados</div>';
+}
+
+function filterAgDd(){
+  var q=document.getElementById('ag-dd-q').value;
+  buildAgDdList(q);
 }
 
 function toggleAgDd(){
@@ -570,10 +586,12 @@ function toggleAgDd(){
   var open=list.style.display==='block';
   list.style.display=open?'none':'block';
   btn.classList.toggle('open',!open);
-  if(!open&&AG.country){
-    // scroll activo
+  if(!open){
+    var qi=document.getElementById('ag-dd-q');
+    if(qi){qi.value='';buildAgDdList();}
+    setTimeout(function(){if(qi) qi.focus();},50);
     var actEl=list.querySelector('.active');
-    if(actEl) actEl.scrollIntoView({block:'nearest'});
+    if(actEl) setTimeout(function(){actEl.scrollIntoView({block:'nearest'});},60);
   }
 }
 
