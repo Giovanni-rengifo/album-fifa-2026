@@ -65,9 +65,21 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .tab.active-share{background:#1e3d6e;color:var(--white)}
 .tab.active-backup{background:#1e3d6e;color:var(--white)}
 .tab.active-agregar{background:#065f46;color:var(--white)}
-.ag-select{width:100%;background:var(--bg-page);border:1px solid var(--border);color:var(--white);font-size:0.875rem;border-radius:10px;padding:10px 12px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none}
-.ag-select:focus{border-color:var(--accent)}
-.ag-select option{background:var(--bg-card)}
+.ag-dd{position:relative;width:100%}
+.ag-dd-btn{width:100%;background:var(--bg-page);border:1px solid var(--border);color:var(--white);font-size:0.875rem;border-radius:10px;padding:10px 14px;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .15s}
+.ag-dd-btn:focus,.ag-dd-btn.open{border-color:var(--accent);outline:none}
+.ag-dd-btn span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.ag-dd-btn i{flex-shrink:0;margin-left:8px;font-size:0.7rem;color:var(--text-dim);transition:transform .2s}
+.ag-dd-btn.open i{transform:rotate(180deg)}
+.ag-dd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;max-height:220px;overflow-y:auto;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.ag-dd-opt{padding:10px 14px;font-size:0.8125rem;cursor:pointer;color:var(--white);transition:background .1s}
+.ag-dd-opt:hover{background:var(--bg-hover);color:var(--accent)}
+.ag-dd-opt.active{background:var(--bg-hover);color:var(--accent);font-weight:700}
+.ag-actions{display:flex;gap:6px;margin-bottom:8px}
+.ag-btn-confirm{flex:1;padding:10px;border:none;border-radius:10px;background:#1d4ed8;color:#fff;font-size:0.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .15s}
+.ag-btn-confirm:hover{filter:brightness(1.15)}
+.ag-btn-clear{flex:0 0 auto;padding:10px 14px;border:1px solid rgba(248,113,113,.4);border-radius:10px;background:rgba(127,29,29,.25);color:#f87171;font-size:0.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s}
+.ag-btn-clear:hover{background:rgba(127,29,29,.45)}
 .numgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
 .num-btn{position:relative;padding:11px 4px 11px;border-radius:8px;border:2px solid;font-weight:900;font-size:0.8125rem;cursor:pointer;transition:transform .1s,background-color .1s,box-shadow .1s;text-align:center;line-height:1;background:rgba(127,29,29,.18);border-color:rgba(248,113,113,.3);color:#f87171}
 .num-btn.sel{background:rgba(20,83,45,.55);border-color:#4ade80;color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.3);transform:scale(.94)}
@@ -523,27 +535,68 @@ var AG={country:null,counts:{}};  // counts[n] = cantidad de copias a agregar
 function renderAgregar(){
   var v=document.getElementById('agregar-view');
   v.style.display='block';
-  var opts='<option value="">— Seleccionar país —</option>';
-  COUNTRIES.forEach(function(c){
-    opts+='<option value="'+c.code+'"'+(AG.country&&AG.country.code===c.code?' selected':'')+'>'+c.code+' — '+c.name+'</option>';
-  });
+  var selLabel=AG.country?AG.country.code+' — '+AG.country.name:'— Seleccionar país —';
   v.innerHTML=
     '<div class="share-box" style="margin-bottom:8px">'+
       '<div class="stats-title" style="margin-bottom:10px"><i class="fa-solid fa-pen-to-square"></i> Agregar láminas</div>'+
-      '<div style="position:relative">'+
-        '<select id="ag-country" class="ag-select" onchange="onAgCountry()">'+opts+'</select>'+
-        '<i class="fa-solid fa-chevron-down" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-dim);font-size:.7rem"></i>'+
+      '<div class="ag-dd" id="ag-dd">'+
+        '<button type="button" class="ag-dd-btn'+(AG.country?' open':'')+'" id="ag-dd-btn" onclick="toggleAgDd()">'+
+          '<span id="ag-dd-label">'+selLabel+'</span>'+
+          '<i class="fa-solid fa-chevron-down"></i>'+
+        '</button>'+
+        '<div class="ag-dd-list" id="ag-dd-list" style="display:none"></div>'+
       '</div>'+
     '</div>'+
     '<div id="ag-body"></div>';
+  buildAgDdList();
   if(AG.country) renderAgBody();
+  // cerrar dropdown al tocar fuera
+  document.addEventListener('click', agDdOutside);
 }
 
-function onAgCountry(){
-  var code=document.getElementById('ag-country').value;
-  if(!code){AG.country=null;AG.counts={};document.getElementById('ag-body').innerHTML='';return;}
+function buildAgDdList(){
+  var list=document.getElementById('ag-dd-list'); if(!list) return;
+  var html='<div class="ag-dd-opt'+(AG.country?'':' active')+'" onclick="selectAgCountry(null)">— Seleccionar país —</div>';
+  COUNTRIES.forEach(function(c){
+    var active=AG.country&&AG.country.code===c.code;
+    html+='<div class="ag-dd-opt'+(active?' active':'')+'" onclick="selectAgCountry(\''+c.code+'\')">'+c.code+' — '+c.name+'</div>';
+  });
+  list.innerHTML=html;
+}
+
+function toggleAgDd(){
+  var list=document.getElementById('ag-dd-list');
+  var btn=document.getElementById('ag-dd-btn');
+  var open=list.style.display==='block';
+  list.style.display=open?'none':'block';
+  btn.classList.toggle('open',!open);
+  if(!open&&AG.country){
+    // scroll activo
+    var actEl=list.querySelector('.active');
+    if(actEl) actEl.scrollIntoView({block:'nearest'});
+  }
+}
+
+function agDdOutside(e){
+  var dd=document.getElementById('ag-dd');
+  if(dd&&!dd.contains(e.target)){
+    var list=document.getElementById('ag-dd-list');
+    var btn=document.getElementById('ag-dd-btn');
+    if(list) list.style.display='none';
+    if(btn) btn.classList.remove('open');
+  }
+}
+
+function selectAgCountry(code){
+  var list=document.getElementById('ag-dd-list');
+  var btn=document.getElementById('ag-dd-btn');
+  if(list) list.style.display='none';
+  if(btn) btn.classList.remove('open');
+  if(!code){AG.country=null;AG.counts={};document.getElementById('ag-dd-label').textContent='— Seleccionar país —';document.getElementById('ag-body').innerHTML='';buildAgDdList();return;}
   var c=null; for(var i=0;i<COUNTRIES.length;i++){if(COUNTRIES[i].code===code){c=COUNTRIES[i];break;}}
   AG.country=c; AG.counts={};
+  document.getElementById('ag-dd-label').textContent=c.code+' — '+c.name;
+  buildAgDdList();
   renderAgBody();
 }
 
@@ -565,11 +618,11 @@ function renderAgBody(){
   var selNums=Object.keys(AG.counts).filter(function(k){return AG.counts[k]>0;});
   if(selNums.length>0){
     var totalCopias=selNums.reduce(function(s,k){return s+AG.counts[k];},0);
-    html+='<div style="display:flex;gap:6px;margin-bottom:8px">'+
-      '<button class="share-btn blue" style="flex:1;padding:7px" onclick="previewAgNum()">'+
+    html+='<div class="ag-actions">'+
+      '<button class="ag-btn-confirm" onclick="previewAgNum()">'+
         '<i class="fa-solid fa-eye"></i> Ver confirmación ('+totalCopias+' cop.)</button>'+
-      '<button class="share-btn" style="flex:0 0 auto;padding:7px 12px;background:rgba(127,29,29,.4);color:#f87171" onclick="AG.counts={};renderAgBody()">'+
-        '<i class="fa-solid fa-xmark"></i></button>'+
+      '<button class="ag-btn-clear" onclick="AG.counts={};renderAgBody()">'+
+        '<i class="fa-solid fa-xmark"></i> Limpiar</button>'+
     '</div>';
   }
   html+='</div><div id="ag-preview"></div>';
@@ -664,7 +717,8 @@ function render(){
   if(S.tab==='stats'){ renderStats(); footer.style.display='none'; return; }
   if(S.tab==='share'){ renderShare(); footer.style.display='none'; return; }
   if(S.tab==='backup'){ renderBackup(); footer.style.display='none'; return; }
-  if(S.tab==='agregar'){ renderAgregar(); footer.style.display='none'; return; }
+  if(S.tab==='agregar'){ document.removeEventListener('click',agDdOutside); renderAgregar(); footer.style.display='none'; return; }
+  document.removeEventListener('click',agDdOutside);
 
   // Obtener items según nivel
   var items = S.level===1 ? getCountryList() : getStickerList(S.country);
