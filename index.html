@@ -69,15 +69,19 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .ag-select:focus{border-color:var(--accent)}
 .ag-select option{background:var(--bg-card)}
 .numgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
-.num-btn{padding:11px 4px;border-radius:8px;border:2px solid;font-weight:900;font-size:0.8125rem;cursor:pointer;transition:transform .1s,background-color .1s,box-shadow .1s;text-align:center;line-height:1}
-.num-btn.missing{background:rgba(127,29,29,.2);border-color:rgba(248,113,113,.3);color:#f87171}
-.num-btn.owned{background:rgba(20,83,45,.2);border-color:rgba(34,197,94,.3);color:#4ade80}
-.num-btn.sel.missing{background:rgba(127,29,29,.55);border-color:#f87171;box-shadow:0 0 0 2px rgba(248,113,113,.35);transform:scale(.94)}
-.num-btn.sel.owned{background:rgba(20,83,45,.55);border-color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.35);transform:scale(.94)}
+.num-btn{position:relative;padding:11px 4px 11px;border-radius:8px;border:2px solid;font-weight:900;font-size:0.8125rem;cursor:pointer;transition:transform .1s,background-color .1s,box-shadow .1s;text-align:center;line-height:1;background:rgba(127,29,29,.18);border-color:rgba(248,113,113,.3);color:#f87171}
+.num-btn.sel{background:rgba(20,83,45,.55);border-color:#4ade80;color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.3);transform:scale(.94)}
+.num-count{position:absolute;top:2px;right:3px;font-size:8px;font-weight:900;color:#fff;background:#16a34a;border-radius:4px;padding:0 3px;line-height:14px}
 .ag-summary{display:flex;gap:10px;justify-content:center;margin-bottom:10px;font-size:0.75rem;font-weight:800;padding:8px;background:rgba(0,0,0,.2);border-radius:8px}
 .ag-sum-tengo{color:#4ade80}
 .ag-sum-repe{color:#fde68a}
-.ag-country-info{font-size:0.6875rem;color:var(--text-dim);margin-bottom:8px;text-align:center}
+.ag-preview-list{display:flex;flex-direction:column;gap:4px;margin:10px 0}
+.ag-pv-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:0.6875rem;border:1px solid}
+.ag-pv-row.tengo{background:rgba(20,83,45,.25);border-color:rgba(34,197,94,.35)}
+.ag-pv-row.repe{background:rgba(120,83,0,.25);border-color:rgba(250,204,21,.35)}
+.ag-pv-row.mixed{background:rgba(14,60,40,.25);border-color:rgba(34,197,94,.25)}
+.ag-pv-code{font-weight:900;color:var(--white);min-width:52px}
+.ag-pv-desc{color:var(--text-muted)}
 main{padding:10px 12px;-webkit-overflow-scrolling:touch;flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column}
 .back-btn{display:none;margin-bottom:8px}
 .back-btn button{font-size:0.75rem;font-weight:700;color:var(--accent);background:var(--border-soft);padding:5px 12px;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:5px;cursor:pointer;transition:background-color .15s,border-color .15s}
@@ -514,7 +518,7 @@ function importData(e){
 }
 
 // ── Agregar láminas — selector visual ────────────────────────────────────────
-var AG={country:null,sel:{}};
+var AG={country:null,counts:{}};  // counts[n] = cantidad de copias a agregar
 
 function renderAgregar(){
   var v=document.getElementById('agregar-view');
@@ -537,60 +541,99 @@ function renderAgregar(){
 
 function onAgCountry(){
   var code=document.getElementById('ag-country').value;
-  if(!code){AG.country=null;AG.sel={};document.getElementById('ag-body').innerHTML='';return;}
+  if(!code){AG.country=null;AG.counts={};document.getElementById('ag-body').innerHTML='';return;}
   var c=null; for(var i=0;i<COUNTRIES.length;i++){if(COUNTRIES[i].code===code){c=COUNTRIES[i];break;}}
-  AG.country=c; AG.sel={};
+  AG.country=c; AG.counts={};
   renderAgBody();
 }
 
 function renderAgBody(){
   var c=AG.country; if(!c) return;
-  var rec=S.db[c.code];
-  var selKeys=Object.keys(AG.sel).filter(function(k){return AG.sel[k];});
-  var toTengo=0,toRepe=0;
-  selKeys.forEach(function(k){
-    var n=parseInt(k);
-    if(rec.owned[n]===true) toRepe++; else toTengo++;
-  });
 
-  var html='<div class="share-box"><div class="ag-country-info">'+
-    '<i class="fa-solid fa-circle-info"></i> Verde = ya tenés · Rojo = falta · Seleccionado = borde brillante</div>'+
-    '<div class="numgrid">';
+  // Grilla de números
+  var html='<div class="share-box"><div class="numgrid">';
   for(var n=c.from;n<=c.to;n++){
-    var owned=rec.owned[n]===true;
-    var s=!!AG.sel[n];
+    var cnt=AG.counts[n]||0;
     var lbl=n===0?'00':String(n);
-    html+='<button type="button" class="num-btn '+(owned?'owned':'missing')+(s?' sel':'')+'" onclick="toggleAgNum('+n+')">'+lbl+'</button>';
+    html+='<button type="button" class="num-btn'+(cnt>0?' sel':'')+'" onclick="tapAgNum('+n+')">'+
+      lbl+(cnt>0?'<span class="num-count">×'+cnt+'</span>':'')+
+    '</button>';
   }
   html+='</div>';
-  if(selKeys.length>0){
-    html+='<div class="ag-summary">';
-    if(toTengo) html+='<span class="ag-sum-tengo"><i class="fa-solid fa-circle-check"></i> '+toTengo+' a Tengo</span>';
-    if(toRepe)  html+='<span class="ag-sum-repe"><i class="fa-solid fa-rotate"></i> '+toRepe+' a Repes</span>';
-    html+='</div>'+
-      '<button class="share-btn green" onclick="applyAgNum()">'+
-        '<i class="fa-solid fa-check"></i> Agregar '+selKeys.length+' lámina'+(selKeys.length>1?'s':'')+
-      '</button>';
+
+  // Resumen + botón limpiar
+  var selNums=Object.keys(AG.counts).filter(function(k){return AG.counts[k]>0;});
+  if(selNums.length>0){
+    var totalCopias=selNums.reduce(function(s,k){return s+AG.counts[k];},0);
+    html+='<div style="display:flex;gap:6px;margin-bottom:8px">'+
+      '<button class="share-btn blue" style="flex:1;padding:7px" onclick="previewAgNum()">'+
+        '<i class="fa-solid fa-eye"></i> Ver confirmación ('+totalCopias+' cop.)</button>'+
+      '<button class="share-btn" style="flex:0 0 auto;padding:7px 12px;background:rgba(127,29,29,.4);color:#f87171" onclick="AG.counts={};renderAgBody()">'+
+        '<i class="fa-solid fa-xmark"></i></button>'+
+    '</div>';
   }
-  html+='</div>';
+  html+='</div><div id="ag-preview"></div>';
   document.getElementById('ag-body').innerHTML=html;
 }
 
-function toggleAgNum(n){
-  AG.sel[n]=!AG.sel[n];
+function tapAgNum(n){
+  AG.counts[n]=(AG.counts[n]||0)+1;
   renderAgBody();
+}
+
+function previewAgNum(){
+  var c=AG.country; if(!c) return;
+  var rec=S.db[c.code];
+  var selNums=Object.keys(AG.counts).filter(function(k){return AG.counts[k]>0;})
+    .sort(function(a,b){return parseInt(a)-parseInt(b);});
+  if(!selNums.length) return;
+
+  var totalTengo=0,totalRepe=0;
+  var rowsHtml='';
+  selNums.forEach(function(k){
+    var n=parseInt(k), cnt=AG.counts[k];
+    var owned=rec.owned[n]===true;
+    var lbl=n===0?'00':String(n);
+    var newTengo=0,newRepe=0;
+    if(!owned){ newTengo=1; newRepe=cnt-1; }
+    else { newRepe=cnt; }
+    totalTengo+=newTengo; totalRepe+=newRepe;
+
+    var rowClass=newTengo>0&&newRepe>0?'mixed':newTengo>0?'tengo':'repe';
+    var desc='';
+    if(newTengo>0&&newRepe>0) desc='1 a <b style="color:#4ade80">Tengo</b> + '+newRepe+' a <b style="color:#fde68a">Repes</b>';
+    else if(newTengo>0) desc='→ <b style="color:#4ade80">Tengo</b>';
+    else desc=newRepe+' cop. → <b style="color:#fde68a">Repes</b>';
+
+    rowsHtml+='<div class="ag-pv-row '+rowClass+'">'+
+      '<span class="ag-pv-code">'+c.code+' '+lbl+(cnt>1?' ×'+cnt:'')+'</span>'+
+      '<span class="ag-pv-desc">'+desc+'</span>'+
+    '</div>';
+  });
+
+  var html='<div class="share-box">'+
+    '<div class="stats-title" style="margin-bottom:8px">Confirmación</div>'+
+    '<div class="ag-preview-list">'+rowsHtml+'</div>'+
+    '<div class="ag-summary">'+
+      (totalTengo?'<span class="ag-sum-tengo"><i class="fa-solid fa-circle-check"></i> '+totalTengo+' a Tengo</span>':'')+
+      (totalRepe?'<span class="ag-sum-repe"><i class="fa-solid fa-rotate"></i> '+totalRepe+' a Repes</span>':'')+
+    '</div>'+
+    '<button class="share-btn green" onclick="applyAgNum()">'+
+      '<i class="fa-solid fa-check"></i> Confirmar y agregar</button>'+
+  '</div>';
+  document.getElementById('ag-preview').innerHTML=html;
+  document.getElementById('ag-preview').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function applyAgNum(){
   var c=AG.country; if(!c) return;
   var rec=S.db[c.code]; var tengo=0,repes=0;
-  Object.keys(AG.sel).forEach(function(k){
-    if(!AG.sel[k]) return;
-    var n=parseInt(k);
-    if(rec.owned[n]!==true){rec.owned[n]=true;tengo++;}
-    else{rec.repes[n]=(rec.repes[n]||0)+1;repes++;}
+  Object.keys(AG.counts).forEach(function(k){
+    var n=parseInt(k), cnt=AG.counts[k]; if(!cnt) return;
+    if(rec.owned[n]!==true){rec.owned[n]=true; tengo++; cnt--;}
+    rec.repes[n]=(rec.repes[n]||0)+cnt; repes+=cnt;
   });
-  AG.sel={};
+  AG.counts={};
   saveDB(); updateGlobal();
   toast('✅ '+tengo+' a Tengo'+(repes?' · '+repes+' a Repes':''));
   renderAgBody();
