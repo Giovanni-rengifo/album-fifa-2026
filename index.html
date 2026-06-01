@@ -55,12 +55,18 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 #search-input::placeholder{color:var(--text-dimmer)}
 #clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-dim);cursor:pointer;display:none;font-size:0.8125rem;padding:2px;transition:color .15s}
 #clear-btn:hover{color:var(--text-muted)}
-.tabs{display:flex;background:var(--bg-card);padding:4px;border-radius:12px;border:1px solid var(--border-tabs);gap:2px}
-.tab{flex:1;padding:7px 4px;font-size:0.6875rem;font-weight:700;border-radius:8px;border:none;cursor:pointer;transition:background-color .15s,color .15s;background:none;color:var(--text-muted)}
+.tabs{display:flex;background:var(--bg-card);padding:4px;border-radius:12px;border:1px solid var(--border-tabs);gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:44px;padding:8px 4px 7px;border-radius:8px;border:none;cursor:pointer;transition:background-color .15s,color .15s;background:none;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:4px}
 .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.06);color:var(--white)}
+.tab-icon-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:24px;height:22px}
+.tab-icon-wrap i{font-size:1.125rem}
+.tab-badge{position:absolute;top:-5px;right:-9px;background:var(--accent);color:var(--bg-page);font-size:0.4375rem;font-weight:800;line-height:1;padding:2px 3px;border-radius:99px;min-width:13px;text-align:center;display:none}
+.tab-badge.visible{display:block}
+.tab-label{font-size:0.5625rem;font-weight:700;letter-spacing:0.02em;line-height:1}
 .tab.active-faltan{background:#7f1d1d;color:var(--white)}
 .tab.active-tengo{background:#14532d;color:var(--white)}
-.tab.active-repes{background:#78350f;color:var(--black)}
+.tab.active-repes{background:#78350f;color:var(--white)}
 .tab.active-stats{background:#1e3d6e;color:var(--white)}
 .tab.active-share{background:#1e3d6e;color:var(--white)}
 .tab.active-backup{background:#1e3d6e;color:var(--white)}
@@ -212,13 +218,13 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
     <button id="clear-btn" aria-label="Limpiar búsqueda"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
   </div>
   <div class="tabs" role="tablist">
-    <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')">Faltan (<span id="cnt-faltan">0</span>)</button>
-    <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')">Tengo (<span id="cnt-tengo">0</span>)</button>
-    <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')">Repes (<span id="cnt-repes">0</span>)</button>
-    <button class="tab" id="tab-stats" role="tab" aria-selected="false" onclick="changeTab('stats')"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="sr-only">Estadísticas</span></button>
-    <button class="tab" id="tab-share" role="tab" aria-selected="false" onclick="changeTab('share')"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span class="sr-only">Compartir</span></button>
-    <button class="tab" id="tab-backup" role="tab" aria-selected="false" onclick="changeTab('backup')"><i class="fa-solid fa-database" aria-hidden="true"></i><span class="sr-only">Backup</span></button>
-    <button class="tab" id="tab-agregar" role="tab" aria-selected="false" onclick="changeTab('agregar')"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i><span class="sr-only">Agregar</span></button>
+    <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')"><span class="tab-icon-wrap"><i class="fa-solid fa-bookmark-slash" aria-hidden="true"></i><span class="tab-badge" id="cnt-faltan">0</span></span><span class="tab-label">Faltan</span></button>
+    <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span class="tab-badge" id="cnt-tengo">0</span></span><span class="tab-label">Tengo</span></button>
+    <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')"><span class="tab-icon-wrap"><i class="fa-solid fa-copy" aria-hidden="true"></i><span class="tab-badge" id="cnt-repes">0</span></span><span class="tab-label">Repes</span></button>
+    <button class="tab" id="tab-stats" role="tab" aria-selected="false" onclick="changeTab('stats')"><span class="tab-icon-wrap"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span><span class="tab-label">Stats</span></button>
+    <button class="tab" id="tab-share" role="tab" aria-selected="false" onclick="changeTab('share')"><span class="tab-icon-wrap"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span><span class="tab-label">Compartir</span></button>
+    <button class="tab" id="tab-backup" role="tab" aria-selected="false" onclick="changeTab('backup')"><span class="tab-icon-wrap"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i></span><span class="tab-label">Backup</span></button>
+    <button class="tab" id="tab-agregar" role="tab" aria-selected="false" onclick="changeTab('agregar')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></span><span class="tab-label">Agregar</span></button>
   </div>
 </header>
 <main id="main">
@@ -362,6 +368,7 @@ function saveDB(){
   try{ localStorage.setItem('panini2026',JSON.stringify(S.db)); }catch(e){}
 }
 
+function setBadge(id,val){var el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.toggle('visible',val>0);}
 function updateGlobal(){
   var owned=0, repes=0;
   COUNTRIES.forEach(function(c){ owned+=countOwned(c); repes+=countRepes(c); });
@@ -369,9 +376,9 @@ function updateGlobal(){
   var pct=Math.round(owned/TOTAL*100);
   document.getElementById('global-counter').textContent=owned+'/'+TOTAL+' ('+pct+'%)';
   document.getElementById('global-bar').style.transform='scaleX('+pct/100+')';
-  document.getElementById('cnt-tengo').textContent=owned;
-  document.getElementById('cnt-faltan').textContent=missing;
-  document.getElementById('cnt-repes').textContent=repes;
+  setBadge('cnt-tengo',owned);
+  setBadge('cnt-faltan',missing);
+  setBadge('cnt-repes',repes);
 }
 
 var _tt;
