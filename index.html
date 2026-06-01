@@ -61,8 +61,6 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .tab[aria-selected="false"]:hover{background:rgba(255,255,255,.06);color:var(--white)}
 .tab-icon-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:24px;height:22px}
 .tab-icon-wrap i{font-size:1.125rem}
-.tab-badge{position:absolute;top:-5px;right:-9px;background:var(--accent);color:var(--bg-page);font-size:0.4375rem;font-weight:800;line-height:1;padding:2px 3px;border-radius:99px;min-width:13px;text-align:center;display:none}
-.tab-badge.visible{display:block}
 .tab-label{font-size:0.5625rem;font-weight:700;letter-spacing:0.02em;line-height:1}
 .tab.active-faltan{background:#7f1d1d;color:var(--white)}
 .tab.active-tengo{background:#14532d;color:var(--white)}
@@ -71,6 +69,18 @@ header{background:var(--bg-surface);border-bottom:1px solid var(--border-soft);p
 .tab.active-share{background:#1e3d6e;color:var(--white)}
 .tab.active-backup{background:#1e3d6e;color:var(--white)}
 .tab.active-agregar{background:#065f46;color:var(--white)}
+.tab-sort-on{background:rgba(96,165,250,.15);color:var(--accent)}
+#sort-panel{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;justify-content:flex-end}
+.sort-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.65)}
+.sort-sheet{position:relative;background:var(--bg-card);border-radius:20px 20px 0 0;padding:16px 16px 32px;border-top:1px solid var(--border)}
+.sort-title{font-size:0.6875rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;text-align:center}
+.sort-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sort-opt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 6px;border:1px solid var(--border);background:var(--bg-page);border-radius:10px;cursor:pointer;color:var(--text-muted);transition:all .15s;width:100%}
+.sort-opt span{font-size:0.5625rem;font-weight:700;line-height:1.2;text-align:center}
+.sort-opt i{font-size:1.0625rem}
+.sort-opt:hover{background:var(--bg-hover);color:var(--white)}
+.sort-opt.active{background:#1e3d6e;border-color:var(--accent);color:var(--white)}
+.sort-opt.active i{color:var(--accent)}
 .ag-dd{position:relative;width:100%}
 .ag-dd-btn{width:100%;background:var(--bg-page);border:1px solid var(--border);color:var(--white);font-size:0.875rem;border-radius:10px;padding:10px 14px;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .15s}
 .ag-dd-btn:focus,.ag-dd-btn.open{border-color:var(--accent);outline:none}
@@ -218,13 +228,14 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
     <button id="clear-btn" aria-label="Limpiar búsqueda"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
   </div>
   <div class="tabs" role="tablist">
-    <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')"><span class="tab-icon-wrap"><i class="fa-solid fa-bookmark-slash" aria-hidden="true"></i><span class="tab-badge" id="cnt-faltan">0</span></span><span class="tab-label">Faltan</span></button>
-    <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span class="tab-badge" id="cnt-tengo">0</span></span><span class="tab-label">Tengo</span></button>
-    <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')"><span class="tab-icon-wrap"><i class="fa-solid fa-copy" aria-hidden="true"></i><span class="tab-badge" id="cnt-repes">0</span></span><span class="tab-label">Repes</span></button>
+    <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')"><span class="tab-icon-wrap"><i class="fa-solid fa-xmark" aria-hidden="true"></i></span><span class="tab-label">Faltan</span></button>
+    <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span><span class="tab-label">Tengo</span></button>
+    <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')"><span class="tab-icon-wrap"><i class="fa-solid fa-copy" aria-hidden="true"></i></span><span class="tab-label">Repes</span></button>
     <button class="tab" id="tab-stats" role="tab" aria-selected="false" onclick="changeTab('stats')"><span class="tab-icon-wrap"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span><span class="tab-label">Stats</span></button>
     <button class="tab" id="tab-share" role="tab" aria-selected="false" onclick="changeTab('share')"><span class="tab-icon-wrap"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span><span class="tab-label">Compartir</span></button>
     <button class="tab" id="tab-backup" role="tab" aria-selected="false" onclick="changeTab('backup')"><span class="tab-icon-wrap"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i></span><span class="tab-label">Backup</span></button>
     <button class="tab" id="tab-agregar" role="tab" aria-selected="false" onclick="changeTab('agregar')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></span><span class="tab-label">Agregar</span></button>
+    <button class="tab" id="tab-orden" onclick="toggleSortPanel()" aria-label="Ordenar"><span class="tab-icon-wrap"><i class="fa-solid fa-sort" aria-hidden="true"></i></span><span class="tab-label">Orden</span></button>
   </div>
 </header>
 <main id="main">
@@ -249,6 +260,22 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
     <button class="nav-btn" id="next-btn" onclick="nextPage()" aria-label="Página siguiente"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
   </div>
 </footer>
+<div id="sort-panel" style="display:none" role="dialog" aria-modal="true" aria-label="Ordenar países">
+  <div class="sort-backdrop" onclick="closeSortPanel()"></div>
+  <div class="sort-sheet">
+    <div class="sort-title">Ordenar países</div>
+    <div class="sort-grid">
+      <button class="sort-opt" data-sort="az" onclick="applySort('az')"><i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i><span>A → Z</span></button>
+      <button class="sort-opt" data-sort="za" onclick="applySort('za')"><i class="fa-solid fa-arrow-up-z-a" aria-hidden="true"></i><span>Z → A</span></button>
+      <button class="sort-opt" data-sort="pag-asc" onclick="applySort('pag-asc')"><i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i><span>Pág. ↑</span></button>
+      <button class="sort-opt" data-sort="pag-desc" onclick="applySort('pag-desc')"><i class="fa-solid fa-arrow-down-9-1" aria-hidden="true"></i><span>Pág. ↓</span></button>
+      <button class="sort-opt" data-sort="owned-desc" onclick="applySort('owned-desc')"><i class="fa-solid fa-arrow-down-9-1" aria-hidden="true"></i><span>Más lám.</span></button>
+      <button class="sort-opt" data-sort="owned-asc" onclick="applySort('owned-asc')"><i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i><span>Menos lám.</span></button>
+      <button class="sort-opt" data-sort="escudo" onclick="applySort('escudo')"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Escudos</span></button>
+      <button class="sort-opt" data-sort="equipo" onclick="applySort('equipo')"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Equipos</span></button>
+    </div>
+  </div>
+</div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
@@ -368,7 +395,6 @@ function saveDB(){
   try{ localStorage.setItem('panini2026',JSON.stringify(S.db)); }catch(e){}
 }
 
-function setBadge(id,val){var el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.toggle('visible',val>0);}
 function updateGlobal(){
   var owned=0, repes=0;
   COUNTRIES.forEach(function(c){ owned+=countOwned(c); repes+=countRepes(c); });
@@ -376,9 +402,6 @@ function updateGlobal(){
   var pct=Math.round(owned/TOTAL*100);
   document.getElementById('global-counter').textContent=owned+'/'+TOTAL+' ('+pct+'%)';
   document.getElementById('global-bar').style.transform='scaleX('+pct/100+')';
-  setBadge('cnt-tengo',owned);
-  setBadge('cnt-faltan',missing);
-  setBadge('cnt-repes',repes);
 }
 
 var _tt;
@@ -389,6 +412,28 @@ function toast(msg){
 }
 
 function setSort(s){ S.sort=s; S.page=0; render(); }
+
+function toggleSortPanel(){
+  var p=document.getElementById('sort-panel');
+  if(p.style.display==='none'){openSortPanel();}else{closeSortPanel();}
+}
+function openSortPanel(){
+  var p=document.getElementById('sort-panel');
+  p.style.display='flex';
+  p.querySelectorAll('.sort-opt').forEach(function(btn){
+    btn.classList.toggle('active',btn.dataset.sort===S.sort);
+  });
+  document.getElementById('tab-orden').classList.add('tab-sort-on');
+}
+function closeSortPanel(){
+  document.getElementById('sort-panel').style.display='none';
+  document.getElementById('tab-orden').classList.remove('tab-sort-on');
+}
+function applySort(s){
+  S.sort=s; S.page=0;
+  closeSortPanel();
+  render();
+}
 
 function changeTab(t){
   S.tab=t; S.page=0;
@@ -417,13 +462,24 @@ function getCountryList(){
     if(S.tab==='repes') return hasRepe;
     return hasFalta; // faltan
   });
-  if(S.sort==='pct'){
-    list.sort(function(a,b){
-      var pa=Math.round(countOwned(a)/countTotal(a)*100);
-      var pb=Math.round(countOwned(b)/countTotal(b)*100);
-      return pb-pa;
-    });
+  if(S.sort==='za'){
+    list.sort(function(a,b){return b.name.localeCompare(a.name);});
+  } else if(S.sort==='pag-asc'){
+    list.sort(function(a,b){var pa=a.page==='Final'?9999:parseInt(a.page);var pb=b.page==='Final'?9999:parseInt(b.page);return pa-pb;});
+  } else if(S.sort==='pag-desc'){
+    list.sort(function(a,b){var pa=a.page==='Final'?9999:parseInt(a.page);var pb=b.page==='Final'?9999:parseInt(b.page);return pb-pa;});
+  } else if(S.sort==='owned-desc'){
+    list.sort(function(a,b){return countOwned(b)-countOwned(a);});
+  } else if(S.sort==='owned-asc'){
+    list.sort(function(a,b){return countOwned(a)-countOwned(b);});
+  } else if(S.sort==='escudo'){
+    list=list.filter(function(c){return c.code!=='FWC'&&!S.db[c.code].owned[1];});
+  } else if(S.sort==='equipo'){
+    list=list.filter(function(c){return c.code!=='FWC'&&!S.db[c.code].owned[13];});
+  } else if(S.sort==='pct'){
+    list.sort(function(a,b){var pa=Math.round(countOwned(a)/countTotal(a)*100);var pb=Math.round(countOwned(b)/countTotal(b)*100);return pb-pa;});
   }
+  // 'az' default: COUNTRIES ya está en orden alfabético
   return list;
 }
 
