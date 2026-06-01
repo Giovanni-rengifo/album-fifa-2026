@@ -144,7 +144,11 @@ main{padding:10px 12px;-webkit-overflow-scrolling:touch;flex:1;overflow-y:auto;m
 .sticker-card.equipo.falta{background:#1e1230;border-color:rgba(139,92,246,.2)}
 .sticker-top{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:1px}
 .sticker-num{font-weight:900;font-size:0.75rem;color:var(--white)}
-.sticker-label{font-size:0.5625rem;color:var(--text-muted);text-align:center}
+.sticker-label{font-size:0.875rem;color:var(--text-muted);text-align:center;display:flex;align-items:center;justify-content:center}
+.sticker-card.tengo .sticker-label i{color:rgba(34,197,94,.85)}
+.sticker-card.escudo.tengo .sticker-label i{color:rgba(59,130,246,.9)}
+.sticker-card.arquero.tengo .sticker-label i{color:rgba(20,184,166,.9)}
+.sticker-card.equipo.tengo .sticker-label i{color:rgba(139,92,246,.9)}
 .sticker-status{font-size:0.5625rem;font-weight:800;display:flex;align-items:center;gap:2px;justify-content:center}
 .sticker-status.tengo{color:var(--green-bright)}
 .sticker-status.falta{color:var(--red)}
@@ -494,11 +498,11 @@ function getStickerList(c){
 }
 
 function stickerLabel(c,n){
-  if(c.code==='FWC') return 'Especial';
-  if(n===1) return 'Escudo';
-  if(n===2) return 'Arquero';
-  if(n===13) return 'Equipo';
-  return 'Jugador';
+  if(c.code==='FWC') return '<i class="fa-solid fa-star" aria-hidden="true" title="Especial"></i>';
+  if(n===1) return '<i class="fa-solid fa-shield-halved" aria-hidden="true" title="Escudo"></i>';
+  if(n===2) return '<i class="fa-solid fa-hands" aria-hidden="true" title="Arquero"></i>';
+  if(n===13) return '<i class="fa-solid fa-users" aria-hidden="true" title="Equipo"></i>';
+  return '<i class="fa-solid fa-person-running" aria-hidden="true" title="Jugador"></i>';
 }
 
 function renderStats(){
