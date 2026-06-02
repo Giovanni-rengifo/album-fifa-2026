@@ -215,8 +215,8 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
 }
 #sort-quick{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;flex-shrink:0}
 #sort-quick::-webkit-scrollbar{display:none}
-.sq-chip{flex-shrink:0;display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);font-size:0.5625rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s;line-height:1;appearance:none;-webkit-appearance:none;font-family:inherit}
-.sq-chip i{font-size:0.6875rem}
+.sq-chip{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:34px;height:30px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;transition:background .15s,color .15s,border-color .15s;appearance:none;-webkit-appearance:none;font-family:inherit}
+.sq-chip i{font-size:0.875rem}
 .sq-chip.active{background:rgba(96,165,250,.15);border-color:var(--accent);color:var(--accent)}
 .sq-chip:not(.active):hover{background:var(--bg-hover);color:var(--white)}
 </style>
@@ -477,20 +477,17 @@ function renderSortQuick(){
   var azC=azA?S.sort:'az';
   var pgA=['pag-asc','pag-desc'].indexOf(S.sort)>-1;
   var pgC=pgA?S.sort:'pag-asc';
-  var owA=['owned-desc','owned-asc'].indexOf(S.sort)>-1;
-  var owC=owA?S.sort:'owned-desc';
   var chips=[
-    {icon:TOGGLE_CFG[azC].icon,label:TOGGLE_CFG[azC].label,active:azA,fn:"applyToggleSort('az','za')"},
-    {icon:TOGGLE_CFG[pgC].icon,label:TOGGLE_CFG[pgC].label,active:pgA,fn:"applyToggleSort('pag-asc','pag-desc')"},
-    {icon:TOGGLE_CFG[owC].icon,label:TOGGLE_CFG[owC].label,active:owA,fn:"applyToggleSort('owned-desc','owned-asc')"},
-    {icon:'fa-shield-halved',label:'Escudos',active:S.sort==='escudo',fn:"applySort('escudo')"},
-    {icon:'fa-hands',label:'Arqueros',active:S.sort==='arquero',fn:"applySort('arquero')"},
-    {icon:'fa-users',label:'Equipos',active:S.sort==='equipo',fn:"applySort('equipo')"},
-    {icon:'fa-layer-group',label:'Grupo',active:S.sort==='grupo',fn:"applySort('grupo')"}
+    {icon:TOGGLE_CFG[azC].icon,active:azA,fn:"applyToggleSort('az','za')"},
+    {icon:TOGGLE_CFG[pgC].icon,active:pgA,fn:"applyToggleSort('pag-asc','pag-desc')"},
+    {icon:'fa-shield-halved',active:S.sort==='escudo',fn:"applySort('escudo')"},
+    {icon:'fa-hands',active:S.sort==='arquero',fn:"applySort('arquero')"},
+    {icon:'fa-users',active:S.sort==='equipo',fn:"applySort('equipo')"},
+    {icon:'fa-layer-group',active:S.sort==='grupo',fn:"applySort('grupo')"}
   ];
   el.innerHTML=chips.map(function(ch){
     return '<button class="sq-chip'+(ch.active?' active':'')+'" onclick="'+ch.fn+'" type="button">'+
-      '<i class="fa-solid '+ch.icon+'" aria-hidden="true"></i><span>'+ch.label+'</span></button>';
+      '<i class="fa-solid '+ch.icon+'" aria-hidden="true"></i></button>';
   }).join('');
 }
 function applySort(s){
