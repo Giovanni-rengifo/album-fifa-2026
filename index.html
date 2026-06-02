@@ -223,6 +223,18 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
 .sq-chip i{font-size:0.875rem}
 .sq-chip.active{background:rgba(96,165,250,.15);border-color:var(--accent);color:var(--accent)}
 .sq-chip:not(.active):hover{background:var(--bg-hover);color:var(--white)}
+.tab.active-canje{background:#1a3f5c;color:var(--white)}
+.repe-btn.deal{background:rgba(96,165,250,.07);color:var(--text-dim)}
+.repe-btn.deal:hover{background:rgba(96,165,250,.2);color:var(--accent)}
+.repe-btn.deal.in-deal{background:rgba(251,191,36,.18);color:#fbbf24}
+.canje-list{display:flex;flex-direction:column;gap:5px;min-height:44px}
+.canje-item{display:flex;align-items:center;gap:8px;background:var(--bg-page);border:1px solid var(--border);border-radius:8px;padding:7px 10px}
+.canje-flag{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+.canje-flag img{width:22px;height:22px;object-fit:cover;border-radius:50%}
+.canje-code{flex:1;font-size:0.75rem;font-weight:700;color:var(--white)}
+.canje-icon{font-size:0.9375rem;display:flex;align-items:center;color:var(--text-muted);min-width:18px}
+.canje-remove{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:2px 6px;font-size:0.6875rem;transition:color .15s;line-height:1}
+.canje-remove:hover{color:var(--red)}
 </style>
 </head>
 <body>
@@ -245,6 +257,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
     <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')"><span class="tab-icon-wrap"><i class="fa-solid fa-xmark" aria-hidden="true"></i></span><span class="tab-label">Faltan</span></button>
     <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span><span class="tab-label">Tengo</span></button>
     <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')"><span class="tab-icon-wrap"><i class="fa-solid fa-copy" aria-hidden="true"></i></span><span class="tab-label">Repes</span></button>
+    <button class="tab" id="tab-canje" role="tab" aria-selected="false" onclick="changeTab('canje')"><span class="tab-icon-wrap"><i class="fa-solid fa-right-left" aria-hidden="true"></i></span><span class="tab-label">Canje</span></button>
     <button class="tab" id="tab-stats" role="tab" aria-selected="false" onclick="changeTab('stats')"><span class="tab-icon-wrap"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span><span class="tab-label">Stats</span></button>
     <button class="tab" id="tab-share" role="tab" aria-selected="false" onclick="changeTab('share')"><span class="tab-icon-wrap"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span><span class="tab-label">Compartir</span></button>
     <button class="tab" id="tab-backup" role="tab" aria-selected="false" onclick="changeTab('backup')"><span class="tab-icon-wrap"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i></span><span class="tab-label">Backup</span></button>
@@ -262,6 +275,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
   <div id="share-view" style="display:none"></div>
   <div id="backup-view" style="display:none"></div>
   <div id="agregar-view" style="display:none"></div>
+  <div id="canje-view" style="display:none"></div>
   <div class="no-results" id="no-results"><i class="fa-regular fa-folder-open" aria-hidden="true"></i><p>Sin resultados</p></div>
 </main>
 <footer id="footer">
@@ -368,6 +382,7 @@ COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,
 var PER_PAGE = 16;
 var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
 var _pageDir = 0; // -1=prev, 0=neutro, 1=next
+var DEAL = {give:[], want:[]}; // {code, n}
 
 // Crear registro limpio para un país
 function makeRecord(c){
@@ -476,7 +491,7 @@ function closeSortPanel(){
 }
 function renderSortQuick(){
   var el=document.getElementById('sort-quick');
-  if(S.level!==1||['stats','share','backup','agregar'].indexOf(S.tab)>-1){el.style.display='none';return;}
+  if(S.level!==1||['stats','share','backup','agregar','canje'].indexOf(S.tab)>-1){el.style.display='none';return;}
   el.style.display='flex';
   var azA=['az','za'].indexOf(S.sort)>-1;
   var azC=azA?S.sort:'az';
@@ -509,7 +524,7 @@ function applyToggleSort(a,b){
 
 function changeTab(t){
   S.tab=t; S.page=0;
-  ['faltan','tengo','repes','stats','share','backup','agregar'].forEach(function(x){
+  ['faltan','tengo','repes','canje','stats','share','backup','agregar'].forEach(function(x){
     var btn=document.getElementById('tab-'+x);
     btn.className='tab'+(x===t?' active-'+x:'');
     btn.setAttribute('aria-selected',x===t?'true':'false');
@@ -857,12 +872,69 @@ function applyAgNum(){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+function toggleDeal(code,n){
+  var list=S.tab==='faltan'?DEAL.want:DEAL.give;
+  var idx=-1; for(var i=0;i<list.length;i++){if(list[i].code===code&&list[i].n===n){idx=i;break;}}
+  if(idx>-1) list.splice(idx,1); else list.push({code:code,n:n});
+  render();
+}
+function removeDealItem(code,n,listType){
+  var list=listType==='want'?DEAL.want:DEAL.give;
+  for(var i=0;i<list.length;i++){if(list[i].code===code&&list[i].n===n){list.splice(i,1);break;}}
+  renderCanje();
+}
+function confirmDeal(){
+  DEAL.want.forEach(function(x){S.db[x.code].owned[x.n]=true;});
+  DEAL.give.forEach(function(x){
+    var rec=S.db[x.code]; if(!rec) return;
+    if((rec.repes[x.n]||0)>0) rec.repes[x.n]--; else rec.owned[x.n]=false;
+  });
+  DEAL={give:[],want:[]};
+  saveDB(); updateGlobal(); toast('✅ Canje confirmado'); changeTab('faltan');
+}
+function clearDeal(){DEAL={give:[],want:[]}; render(); toast('Canje rechazado');}
+function renderCanje(){
+  var v=document.getElementById('canje-view'); v.style.display='block';
+  function itemHtml(item,listType){
+    var c=null; for(var i=0;i<COUNTRIES.length;i++){if(COUNTRIES[i].code===item.code){c=COUNTRIES[i];break;}} if(!c) return '';
+    var lbl=item.n===0?'00':String(item.n);
+    var fi=c.iso==='fwc'?'<span style="font-size:0.875rem;line-height:1">✨</span>':'<img src="https://flagcdn.com/w80/'+c.iso+'.png" loading="lazy" alt="" style="width:22px;height:22px;object-fit:cover;border-radius:50%">';
+    return '<div class="canje-item">'+
+      '<div class="canje-flag">'+fi+'</div>'+
+      '<span class="canje-code">'+item.code+' '+lbl+'</span>'+
+      '<span class="canje-icon">'+stickerLabel(c,item.n)+'</span>'+
+      '<button type="button" class="canje-remove" onclick="removeDealItem(\''+item.code+'\','+item.n+',\''+listType+'\')" aria-label="Quitar"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>'+
+    '</div>';
+  }
+  var empty='<div style="color:var(--text-dimmer);font-size:0.6875rem;text-align:center;padding:10px 0">Sin láminas</div>';
+  var giveHtml=DEAL.give.length?DEAL.give.map(function(x){return itemHtml(x,'give');}).join(''):empty;
+  var wantHtml=DEAL.want.length?DEAL.want.map(function(x){return itemHtml(x,'want');}).join(''):empty;
+  var canAct=DEAL.give.length>0||DEAL.want.length>0;
+  v.innerHTML=
+    '<div class="share-box">'+
+      '<div class="stats-title" style="margin-bottom:8px"><i class="fa-solid fa-arrow-up-from-bracket" style="color:#fbbf24" aria-hidden="true"></i> Posible Intercambio <span style="color:var(--text-dim);font-weight:500;text-transform:none">(yo ofrezco)</span></div>'+
+      '<div class="canje-list">'+giveHtml+'</div>'+
+    '</div>'+
+    '<div class="share-box">'+
+      '<div class="stats-title" style="margin-bottom:8px"><i class="fa-solid fa-arrow-down-to-bracket" style="color:#4ade80" aria-hidden="true"></i> Posible Canje <span style="color:var(--text-dim);font-weight:500;text-transform:none">(yo recibo)</span></div>'+
+      '<div class="canje-list">'+wantHtml+'</div>'+
+    '</div>'+
+    (canAct?
+      '<div style="display:flex;gap:8px">'+
+        '<button class="share-btn green" style="flex:1" onclick="confirmDeal()"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Confirmar Canje</button>'+
+        '<button class="share-btn" style="background:rgba(127,29,29,.35);border:1px solid rgba(248,113,113,.3);color:#f87171;flex:0 0 auto;padding:10px 16px" onclick="clearDeal()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>'+
+      '</div>':
+      '<p style="text-align:center;color:var(--text-dimmer);font-size:0.6875rem;padding:8px 0">Marcá láminas en Faltan, Tengo o Repes para armar un canje</p>'
+    );
+}
+
 function render(){
   var grid=document.getElementById('grid');
   var sv=document.getElementById('stats-view');
   var shv=document.getElementById('share-view');
   var bkv=document.getElementById('backup-view');
   var agv=document.getElementById('agregar-view');
+  var cnv=document.getElementById('canje-view');
   var nr=document.getElementById('no-results');
   var bwrap=document.getElementById('back-wrap');
 
@@ -873,6 +945,7 @@ function render(){
   shv.style.display='none';
   bkv.style.display='none';
   agv.style.display='none';
+  cnv.style.display='none';
   nr.style.display='none';
   bwrap.style.display='none';
   footer.style.display='block';
@@ -881,6 +954,7 @@ function render(){
   if(S.tab==='stats'){ grid.style.display='none'; renderStats(); footer.style.display='none'; return; }
   if(S.tab==='share'){ grid.style.display='none'; renderShare(); footer.style.display='none'; return; }
   if(S.tab==='backup'){ grid.style.display='none'; renderBackup(); footer.style.display='none'; return; }
+  if(S.tab==='canje'){ grid.style.display='none'; renderCanje(); footer.style.display='none'; return; }
   if(S.tab==='agregar'){ grid.style.display='none'; document.removeEventListener('click',agDdOutside); renderAgregar(); footer.style.display='none'; return; }
   document.removeEventListener('click',agDdOutside);
 
@@ -961,6 +1035,8 @@ function render(){
       var specialClass=c.code==='FWC'?' especial':n===1?' escudo':n===2?' arquero':n===13?' equipo':'';
       var stateClass=S.tab==='tengo'&&!have?'ghost':rep>0?'repe':have?'tengo':'falta';
       div.className='sticker-card'+specialClass+' '+stateClass;
+      var dlList=S.tab==='faltan'?DEAL.want:DEAL.give;
+      var inDeal=dlList.some(function(x){return x.code===c.code&&x.n===n;});
       div.innerHTML=(rep>0?'<div class="repe-badge">+'+rep+'</div>':'')+
         '<div class="sticker-top">'+
           '<div class="sticker-num">'+c.code+' '+numLabel+'</div>'+
@@ -968,7 +1044,7 @@ function render(){
         '</div>'+
         '<div class="repe-ctrl">'+
           '<button type="button" class="repe-btn minus" onclick="changeRepe('+n+',-1)" aria-label="Quitar lámina '+numLabel+'"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>'+
-          '<span class="repe-lbl">REPE</span>'+
+          '<button type="button" class="repe-btn deal'+(inDeal?' in-deal':'')+'" onclick="toggleDeal(\''+c.code+'\','+n+')" aria-label="Canje"><i class="fa-solid fa-right-left" aria-hidden="true"></i></button>'+
           '<button type="button" class="repe-btn plus" onclick="changeRepe('+n+',1)" aria-label="Agregar lámina '+numLabel+'"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>'+
         '</div>';
       grid.appendChild(div);
