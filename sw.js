@@ -1,4 +1,4 @@
-const CACHE = 'road2026-v30';
+const CACHE = 'road2026-v31';
 const ASSETS = [
   '/album-fifa-2026/',
   '/album-fifa-2026/index.html',
@@ -27,11 +27,15 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).catch(() => {
-        if (e.request.mode === 'navigate') return caches.match('/album-fifa-2026/index.html');
-      });
-    })
-  );
+  if (e.request.mode === 'navigate') {
+    // Network-first para HTML: siempre sirve la versión más reciente
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match('/album-fifa-2026/index.html'))
+    );
+  } else {
+    // Cache-first para íconos y assets estáticos
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
+  }
 });
