@@ -852,7 +852,7 @@ function render(){
   grid.style.display='grid';
   // Si hay pocas filas, limitar altura para que no se estiren de más
   var rowCount=Math.ceil(slice.length/4);
-  grid.style.gridAutoRows=rowCount>=5?'minmax(68px,1fr)':'minmax(68px,110px)';
+  grid.style.gridAutoRows=rowCount>=4?'minmax(68px,1fr)':'minmax(68px,110px)';
 
   if(S.level===1){
     slice.forEach(function(c,idx){
