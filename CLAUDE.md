@@ -43,10 +43,25 @@ git push origin main
 Cada vez que se hagan cambios visuales o de lógica JS, **incrementar el número de versión** en `sw.js`:
 
 ```js
-const CACHE = 'road2026-v26'; // ← incrementar en cada deploy
+const CACHE = 'road2026-v35'; // ← incrementar en cada deploy
 ```
 
-Sin esto, los usuarios instalados siguen viendo la versión anterior.
+**CRÍTICO**: Si se modifica `index.html` sin actualizar `sw.js`, los usuarios con la PWA instalada siguen viendo la versión anterior en caché.
+
+### Estrategia de caché (SW v31+)
+
+**Network-first para HTML, cache-first para assets estáticos:**
+
+```js
+// HTML → siempre fresco desde la red
+if (e.request.mode === 'navigate') {
+  fetch(e.request).catch(() => caches.match('/album-fifa-2026/index.html'))
+}
+// Íconos → cache-first (no cambian)
+caches.match(e.request).then(cached => cached || fetch(e.request))
+```
+
+Esto resuelve el problema histórico de actualizaciones que no llegaban a usuarios con PWA instalada. Con network-first, el HTML siempre se sirve fresco cuando hay conexión; el caché solo se usa offline.
 
 ### Estructura correcta del SW (no modificar sin razón)
 - `skipWaiting()` va al final de la cadena `.then()` dentro de `e.waitUntil()` en `install`
@@ -54,7 +69,7 @@ Sin esto, los usuarios instalados siguen viendo la versión anterior.
 - **No incluir URLs externas (CDN) en `ASSETS`** — si la CDN falla, el SW no instala
 
 ### Si la app no actualiza
-Desinstalar la PWA completamente y reinstalar desde la URL. El backup de datos está en la tab Backup.
+Con SW v31+ esto ya no debería ocurrir (network-first). Si persiste: desinstalar la PWA y reinstalar desde la URL. El backup de datos está en la tab Backup.
 
 ## Nomenclatura de secciones (UI)
 
@@ -106,14 +121,87 @@ Todos los tabs tienen ícono FA + label de texto. Tamaño ícono: `1.125rem`. To
 | **Orden** | `tab-orden` | `fa-sort` | Abre sort panel (NO cambia `S.tab`) |
 
 ### Panel de Orden (Sort Panel)
-- Bottom sheet `#sort-panel` con 8 opciones en grid 4×2
-- Funciones: `toggleSortPanel()`, `openSortPanel()`, `closeSortPanel()`, `applySort(s)`
-- `S.sort` posibles valores: `az` | `za` | `pag-asc` | `pag-desc` | `owned-desc` | `owned-asc` | `escudo` | `equipo` | `pct`
-- Filtros `escudo` y `equipo` excluyen FWC (`c.code !== 'FWC'`)
+
+Bottom sheet `#sort-panel` — **7 opciones** en grid 3×2 + Grupo full-width.
+
+#### Botones toggle (alternan dirección al tocarse de nuevo)
+| Botón | Alterna entre | Atributos HTML |
+|---|---|---|
+| A→Z / Z→A | `az` ↔ `za` | `data-toggle-a="az" data-toggle-b="za"` |
+| Pág.↑ / Pág.↓ | `pag-asc` ↔ `pag-desc` | `data-toggle-a="pag-asc" data-toggle-b="pag-desc"` |
+| Más lám. / Menos lám. | `owned-desc` ↔ `owned-asc` | `data-toggle-a="owned-desc" data-toggle-b="owned-asc"` |
+
+El ícono y label del botón se actualizan dinámicamente al abrir el panel (ver `TOGGLE_CFG` en JS y `openSortPanel()`).
+
+#### Botones simples (contextuales por tab)
+| Botón | Sort value | Tab Faltan | Tab Tengo | Tab Repes |
+|---|---|---|---|---|
+| Escudos | `escudo` | Países sin escudo (#1) | Países con escudo | Países con escudo repetido |
+| Arqueros | `arquero` | Países sin arquero (#2) | Países con arquero | Países con arquero repetido |
+| Equipos | `equipo` | Países sin equipo (#13) | Países con equipo | Países con equipo repetido |
+| **Grupo** | `grupo` | Ordena A→B→...→L | igual | igual |
+
+Todos excluyen FWC. El sort `grupo` ordena alfabéticamente por letra de grupo (A-L), FWC al final.
+
+#### Funciones del sort panel
+| Función | Qué hace |
+|---|---|
+| `toggleSortPanel()` | Abre/cierra el panel |
+| `openSortPanel()` | Abre, actualiza íconos/labels de toggles, marca active |
+| `closeSortPanel()` | Cierra, quita highlight de tab-orden |
+| `applySort(s)` | Aplica sort simple, cierra panel |
+| `applyToggleSort(a,b)` | Alterna entre a y b según `S.sort` actual |
+
+#### `S.sort` posibles valores
+`az` | `za` | `pag-asc` | `pag-desc` | `owned-desc` | `owned-asc` | `escudo` | `arquero` | `equipo` | `grupo` | `pct`
 
 ## Sección 4 — Cards de países (Level 1)
 
-Sin cambios estructurales. Progress bar, bandera, código, página.
+**Grid: 4 columnas** (`repeat(4,1fr)`), `PER_PAGE = 16` (múltiplo de 4 → sin celdas vacías).
+
+### Lógica de altura de filas (JS inline en render)
+```js
+var rowCount = Math.ceil(slice.length / 4);
+grid.style.gridAutoRows = rowCount >= 4 ? 'minmax(68px,1fr)' : 'minmax(68px,110px)';
+```
+- ≥4 filas (página completa): `1fr` → llenan la pantalla
+- <4 filas (búsqueda con pocos resultados): cappadas a 110px → sin estiramiento
+
+### Contenido de la card
+- Bandera (flag-circle, 34px)
+- Código del país (bold)
+- Pág. X
+- Barra de progreso
+- X/20 (contador)
+- **Badge de grupo** `GRP X` — solo en level 1, no en láminas
+
+### Badge de grupo
+```css
+.country-group { font-size:0.75rem; font-weight:900; background:rgba(96,165,250,.15);
+  color:var(--accent); border:1px solid rgba(96,165,250,.3);
+  border-radius:5px; padding:3px 8px; margin-top:5px; }
+```
+Renderizado condicionalmente: `c.group ? '<div class="country-group">GRP '+c.group+'</div>' : ''`
+FWC no tiene grupo → no muestra badge.
+
+### Datos de grupos (objeto `GROUPS` en JS)
+```js
+var GROUPS = {
+  'MEX':'A','RSA':'A','KOR':'A','CZE':'A',
+  'CAN':'B','BIH':'B','QAT':'B','SUI':'B',
+  'BRA':'C','MAR':'C','HAI':'C','SCO':'C',
+  'USA':'D','PAR':'D','AUS':'D','TUR':'D',
+  'GER':'E','CUW':'E','CIV':'E','ECU':'E',
+  'NED':'F','JPN':'F','SWE':'F','TUN':'F',
+  'BEL':'G','EGY':'G','IRN':'G','NZL':'G',
+  'ESP':'H','CPV':'H','KSA':'H','URU':'H',
+  'FRA':'I','SEN':'I','IRQ':'I','NOR':'I',
+  'ARG':'J','ALG':'J','AUT':'J','JOR':'J',
+  'POR':'K','COD':'K','UZB':'K','COL':'K',
+  'ENG':'L','CRO':'L','GHA':'L','PAN':'L'
+};
+```
+Se inyecta en COUNTRIES via `.map()`: `group: GROUPS[c.code] || ''`
 
 ## Sección 4 — Cards de láminas (Level 2)
 
@@ -129,6 +217,12 @@ Sin cambios estructurales. Progress bar, bandera, código, página.
 - Tamaño ícono: `22px`
 - Clase CSS tipo: `escudo` | `arquero` | `equipo` | `especial` (FWC) — se aplica en el render
 - El ícono indica el **tipo**, el borde indica el **estado**
+
+### Badge de repetidas (`.repe-badge`)
+```css
+.repe-badge { font-size: 13px; font-weight:900; /* era 9px */ }
+```
+Muestra `+N` en esquina superior derecha cuando hay repetidas.
 
 ### Sistema de color — estados de card
 Fondo unificado para todos: `rgba(232,237,242,0.07)`
@@ -160,7 +254,7 @@ var S = {
   page: 0,
   q: '',           // query de búsqueda
   db: {},          // datos de láminas
-  sort: 'az'       // az|za|pag-asc|pag-desc|owned-desc|owned-asc|escudo|equipo|pct
+  sort: 'az'       // az|za|pag-asc|pag-desc|owned-desc|owned-asc|escudo|arquero|equipo|grupo|pct
 }
 ```
 
@@ -169,6 +263,7 @@ var S = {
 - Países regulares: láminas 1–20 (`from:1, to:20`)
 - FWC: láminas 0–19 (`from:0, to:19`) — 20 láminas, empezando en 00
 - `countTotal(c) = c.to - c.from + 1` → siempre 20
+- Cada país tiene campo `group` (letra A-L, o `''` para FWC)
 
 ### Persistencia
 - `localStorage` key: `panini2026`
@@ -188,11 +283,10 @@ var S = {
 | `renderStats()` | Genera vista de estadísticas (muestra `X/20`, no %) |
 | `renderShare()` | Genera texto para compartir por WhatsApp |
 | `renderBackup()` | Genera UI de export/import JSON |
-| `setSort(s)` | Cambia sort y re-renderiza |
-| `applySort(s)` | Aplica sort desde panel, cierra panel, re-renderiza |
-| `toggleSortPanel()` | Abre/cierra el panel de orden |
+| `applySort(s)` | Aplica sort simple desde panel |
+| `applyToggleSort(a,b)` | Alterna sort entre dos valores |
+| `openSortPanel()` | Abre panel y actualiza íconos/labels de toggles |
 | `stickerLabel(c,n)` | Retorna HTML con ícono FA según tipo de lámina |
-| `setBadge(id,val)` | — (eliminada, badges removidos) |
 
 ## Stats
 
@@ -209,6 +303,29 @@ var S = {
 - Íconos decorativos: `aria-hidden="true"`
 - Focus: `*:focus-visible` global con outline accent
 - Touch targets: `.repe-btn` usa `::after` para 44px, `.nav-btn` es 44px
+
+## Problemas conocidos y soluciones aplicadas
+
+### SW no actualizaba en usuarios con PWA instalada
+**Causa**: Estrategia cache-first servía el HTML viejo indefinidamente. Agravado por commits que modificaban `index.html` sin bumear `sw.js`.
+**Solución**: SW v31 — cambio a network-first para requests de navegación. El HTML siempre se sirve fresco si hay red; caché solo para offline.
+**Regla**: Igual hay que bumear `sw.js` en cada commit, pero ya no es la única barrera.
+
+### Cards estiradas con 4 columnas
+**Causa**: Al pasar de 3 a 4 columnas, `grid-auto-rows:1fr` distribuía la altura disponible entre menos filas (4 en vez de 5), haciendo cada card más alta.
+**Solución**: `PER_PAGE = 16` (múltiplo de 4, sin celdas vacías) + threshold `rowCount >= 4` para activar `1fr`.
+
+### Sort escudo/equipo no era contextual
+**Causa**: Filtraban siempre por `!owned` (faltantes) sin importar el tab activo.
+**Solución**: Los sorts de tipo de lámina ahora leen `S.tab` y filtran según contexto: `faltan`→ sin esa lámina, `tengo`→ con esa lámina, `repes`→ con esa lámina repetida.
+
+## Estado actual del proyecto
+
+- **SW versión**: `road2026-v35`
+- **Grid**: 4 columnas, `PER_PAGE = 16`
+- **Sort panel**: 7 opciones — 3 toggles (A↕Z, Pág.↕, Láminas↕) + Escudos/Arqueros/Equipos (contextuales) + Grupo (full-width)
+- **Grupos A-L**: implementados en datos y UI (badge `GRP X` en cards)
+- **Badge repes**: `font-size: 13px` (mejorado de 9px)
 
 ## Skills disponibles
 
