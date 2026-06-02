@@ -210,6 +210,10 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
 }
+@keyframes slide-from-right{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slide-from-left{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+#grid[data-dir="next"] .country-card{animation-name:slide-from-right}
+#grid[data-dir="prev"] .country-card{animation-name:slide-from-left}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important;animation-delay:0ms !important}
 }
@@ -363,6 +367,7 @@ COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,
 
 var PER_PAGE = 16;
 var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
+var _pageDir = 0; // -1=prev, 0=neutro, 1=next
 
 // Crear registro limpio para un país
 function makeRecord(c){
@@ -863,8 +868,7 @@ function render(){
 
   var footer=document.getElementById('footer');
 
-  // Ocultar todo
-  grid.style.display='none';
+  // Ocultar vistas especiales (grid se oculta solo cuando es necesario)
   sv.style.display='none';
   shv.style.display='none';
   bkv.style.display='none';
@@ -874,10 +878,10 @@ function render(){
   footer.style.display='block';
   renderSortQuick();
 
-  if(S.tab==='stats'){ renderStats(); footer.style.display='none'; return; }
-  if(S.tab==='share'){ renderShare(); footer.style.display='none'; return; }
-  if(S.tab==='backup'){ renderBackup(); footer.style.display='none'; return; }
-  if(S.tab==='agregar'){ document.removeEventListener('click',agDdOutside); renderAgregar(); footer.style.display='none'; return; }
+  if(S.tab==='stats'){ grid.style.display='none'; renderStats(); footer.style.display='none'; return; }
+  if(S.tab==='share'){ grid.style.display='none'; renderShare(); footer.style.display='none'; return; }
+  if(S.tab==='backup'){ grid.style.display='none'; renderBackup(); footer.style.display='none'; return; }
+  if(S.tab==='agregar'){ grid.style.display='none'; document.removeEventListener('click',agDdOutside); renderAgregar(); footer.style.display='none'; return; }
   document.removeEventListener('click',agDdOutside);
 
   // Obtener items según nivel
@@ -912,12 +916,15 @@ function render(){
     } else {
       nrMsg.textContent=S.tab==='tengo'?'Todavía no tenés ninguna lámina':S.tab==='repes'?'Sin repetidas todavía':'¡Álbum completo!';
     }
+    grid.style.display='none';
     nr.style.display='block';
     updateGlobal();
     return;
   }
 
   var slice=items.slice(S.page*perPage,(S.page+1)*perPage);
+  grid.dataset.dir=_pageDir>0?'next':_pageDir<0?'prev':'';
+  _pageDir=0;
   grid.innerHTML='';
   grid.style.display='grid';
   // Si hay pocas filas, limitar altura para que no se estiren de más
@@ -988,8 +995,8 @@ function changeRepe(n,val){
 }
 
 function goBack(){S.level=1;S.country=null;S.page=0;render();}
-function nextPage(){S.page++;render();}
-function prevPage(){if(S.page>0){S.page--;render();}}
+function nextPage(){if(document.getElementById('next-btn').disabled)return;_pageDir=1;S.page++;render();}
+function prevPage(){if(document.getElementById('prev-btn').disabled)return;_pageDir=-1;S.page--;render();}
 
 var si=document.getElementById('search-input'),cb=document.getElementById('clear-btn');
 si.addEventListener('input',function(e){
