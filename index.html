@@ -340,7 +340,7 @@ var COUNTRIES = COUNTRIES_RAW.map(function(c){
 });
 COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,to:19});
 
-var PER_PAGE = 15;
+var PER_PAGE = 16;
 var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
 
 // Crear registro limpio para un país
@@ -851,8 +851,8 @@ function render(){
   grid.innerHTML='';
   grid.style.display='grid';
   // Si hay pocas filas, limitar altura para que no se estiren de más
-  var rowCount=Math.ceil(slice.length/3);
-  grid.style.gridAutoRows=rowCount>=4?'minmax(68px,1fr)':'minmax(68px,130px)';
+  var rowCount=Math.ceil(slice.length/4);
+  grid.style.gridAutoRows=rowCount>=5?'minmax(68px,1fr)':'minmax(68px,110px)';
 
   if(S.level===1){
     slice.forEach(function(c,idx){
