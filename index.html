@@ -133,6 +133,8 @@ main{padding:10px 12px;-webkit-overflow-scrolling:touch;flex:1;overflow-y:auto;m
 .progress-bar{width:100%;background:rgba(0,0,0,.4);height:5px;border-radius:999px;overflow:hidden;margin-top:3px}
 .progress-fill{background:var(--green);height:100%;border-radius:999px;width:100%;transform:scaleX(0);transform-origin:left;will-change:transform}
 .progress-count{font-size:0.625rem;color:var(--accent);font-weight:700;margin-top:2px}
+.country-group{font-size:0.5625rem;font-weight:900;background:rgba(96,165,250,.12);color:var(--accent);border:1px solid rgba(96,165,250,.25);border-radius:4px;padding:2px 6px;margin-top:auto;letter-spacing:.06em}
+.sort-opt-wide{grid-column:1/-1}
 .sticker-card{border:1px solid;border-radius:10px;padding:5px 4px;display:flex;flex-direction:column;justify-content:space-between;gap:3px;position:relative;min-height:68px}
 .sticker-card.falta{background:rgba(232,237,242,0.07);border-color:rgba(239,68,68,.5)}
 .sticker-card.tengo{background:rgba(232,237,242,0.07);border-color:rgba(34,197,94,.8);border-width:2px}
@@ -276,6 +278,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
       <button class="sort-opt" data-sort="escudo" onclick="applySort('escudo')"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Escudos</span></button>
       <button class="sort-opt" data-sort="arquero" onclick="applySort('arquero')"><i class="fa-solid fa-hands" aria-hidden="true"></i><span>Arqueros</span></button>
       <button class="sort-opt" data-sort="equipo" onclick="applySort('equipo')"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Equipos</span></button>
+      <button class="sort-opt sort-opt-wide" data-sort="grupo" onclick="applySort('grupo')"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Grupo</span></button>
     </div>
   </div>
 </div>
@@ -334,11 +337,26 @@ var COUNTRIES_RAW = [
   {code:"UZB",name:"Uzbekistán",iso:"uz",page:94}
 ];
 
+var GROUPS = {
+  'MEX':'A','RSA':'A','KOR':'A','CZE':'A',
+  'CAN':'B','BIH':'B','QAT':'B','SUI':'B',
+  'BRA':'C','MAR':'C','HAI':'C','SCO':'C',
+  'USA':'D','PAR':'D','AUS':'D','TUR':'D',
+  'GER':'E','CUW':'E','CIV':'E','ECU':'E',
+  'NED':'F','JPN':'F','SWE':'F','TUN':'F',
+  'BEL':'G','EGY':'G','IRN':'G','NZL':'G',
+  'ESP':'H','CPV':'H','KSA':'H','URU':'H',
+  'FRA':'I','SEN':'I','IRQ':'I','NOR':'I',
+  'ARG':'J','ALG':'J','AUT':'J','JOR':'J',
+  'POR':'K','COD':'K','UZB':'K','COL':'K',
+  'ENG':'L','CRO':'L','GHA':'L','PAN':'L'
+};
+
 // Países normales: láminas 1-20. FWC: láminas 0-19
 var COUNTRIES = COUNTRIES_RAW.map(function(c){
-  return {code:c.code,name:c.name,iso:c.iso,page:c.page,from:1,to:20};
+  return {code:c.code,name:c.name,iso:c.iso,page:c.page,from:1,to:20,group:GROUPS[c.code]||''};
 });
-COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,to:19});
+COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,to:19,group:''});
 
 var PER_PAGE = 16;
 var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
@@ -484,6 +502,11 @@ function getCountryList(){
       if(S.tab==='tengo') return owned;
       if(S.tab==='repes') return rep;
       return !owned;
+    });
+  } else if(S.sort==='grupo'){
+    list.sort(function(a,b){
+      var ga=a.group||'Z', gb=b.group||'Z';
+      return ga!==gb ? ga.localeCompare(gb) : a.name.localeCompare(b.name);
     });
   } else if(S.sort==='pct'){
     list.sort(function(a,b){var pa=Math.round(countOwned(a)/countTotal(a)*100);var pb=Math.round(countOwned(b)/countTotal(b)*100);return pb-pa;});
@@ -868,7 +891,8 @@ function render(){
         '<div class="country-code">'+c.code+'</div>'+
         '<div class="country-page">Pág. '+c.page+'</div>'+
         '<div class="progress-bar"><div class="progress-fill" style="transform:scaleX('+pct/100+')"></div></div>'+
-        '<div class="progress-count">'+o+'/'+t+'</div>';
+        '<div class="progress-count">'+o+'/'+t+'</div>'+
+        (c.group?'<div class="country-group">GRP '+c.group+'</div>':'');
       btn.onclick=function(cc){return function(){S.level=2;S.country=cc;S.page=0;render();};}(c);
       grid.appendChild(btn);
     });
