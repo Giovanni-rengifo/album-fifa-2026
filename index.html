@@ -269,12 +269,9 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
   <div class="sort-sheet">
     <div class="sort-title">Ordenar países</div>
     <div class="sort-grid">
-      <button class="sort-opt" data-sort="az" onclick="applySort('az')"><i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i><span>A → Z</span></button>
-      <button class="sort-opt" data-sort="za" onclick="applySort('za')"><i class="fa-solid fa-arrow-up-z-a" aria-hidden="true"></i><span>Z → A</span></button>
-      <button class="sort-opt" data-sort="pag-asc" onclick="applySort('pag-asc')"><i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i><span>Pág. ↑</span></button>
-      <button class="sort-opt" data-sort="pag-desc" onclick="applySort('pag-desc')"><i class="fa-solid fa-arrow-down-9-1" aria-hidden="true"></i><span>Pág. ↓</span></button>
-      <button class="sort-opt" data-sort="owned-desc" onclick="applySort('owned-desc')"><i class="fa-solid fa-arrow-down-9-1" aria-hidden="true"></i><span>Más lám.</span></button>
-      <button class="sort-opt" data-sort="owned-asc" onclick="applySort('owned-asc')"><i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i><span>Menos lám.</span></button>
+      <button class="sort-opt" data-toggle-a="az" data-toggle-b="za" onclick="applyToggleSort('az','za')"><i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i><span>A → Z</span></button>
+      <button class="sort-opt" data-toggle-a="pag-asc" data-toggle-b="pag-desc" onclick="applyToggleSort('pag-asc','pag-desc')"><i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i><span>Pág. ↑</span></button>
+      <button class="sort-opt" data-toggle-a="owned-desc" data-toggle-b="owned-asc" onclick="applyToggleSort('owned-desc','owned-asc')"><i class="fa-solid fa-arrow-down-9-1" aria-hidden="true"></i><span>Más lám.</span></button>
       <button class="sort-opt" data-sort="escudo" onclick="applySort('escudo')"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Escudos</span></button>
       <button class="sort-opt" data-sort="arquero" onclick="applySort('arquero')"><i class="fa-solid fa-hands" aria-hidden="true"></i><span>Arqueros</span></button>
       <button class="sort-opt" data-sort="equipo" onclick="applySort('equipo')"><i class="fa-solid fa-users" aria-hidden="true"></i><span>Equipos</span></button>
@@ -438,10 +435,26 @@ function toggleSortPanel(){
   var p=document.getElementById('sort-panel');
   if(p.style.display==='none'){openSortPanel();}else{closeSortPanel();}
 }
+var TOGGLE_CFG={
+  'az':        {icon:'fa-arrow-down-a-z',label:'A → Z'},
+  'za':        {icon:'fa-arrow-up-z-a',  label:'Z → A'},
+  'pag-asc':   {icon:'fa-arrow-up-1-9',  label:'Pág. ↑'},
+  'pag-desc':  {icon:'fa-arrow-down-9-1',label:'Pág. ↓'},
+  'owned-desc':{icon:'fa-arrow-down-9-1',label:'Más lám.'},
+  'owned-asc': {icon:'fa-arrow-up-1-9',  label:'Menos lám.'}
+};
 function openSortPanel(){
   var p=document.getElementById('sort-panel');
   p.style.display='flex';
-  p.querySelectorAll('.sort-opt').forEach(function(btn){
+  p.querySelectorAll('[data-toggle-a]').forEach(function(btn){
+    var a=btn.dataset.toggleA,b=btn.dataset.toggleB;
+    var cur=(S.sort===a||S.sort===b)?S.sort:a;
+    var cfg=TOGGLE_CFG[cur];
+    btn.querySelector('i').className='fa-solid '+cfg.icon;
+    btn.querySelector('span').textContent=cfg.label;
+    btn.classList.toggle('active',S.sort===a||S.sort===b);
+  });
+  p.querySelectorAll('[data-sort]').forEach(function(btn){
     btn.classList.toggle('active',btn.dataset.sort===S.sort);
   });
   document.getElementById('tab-orden').classList.add('tab-sort-on');
@@ -452,6 +465,12 @@ function closeSortPanel(){
 }
 function applySort(s){
   S.sort=s; S.page=0;
+  closeSortPanel();
+  render();
+}
+function applyToggleSort(a,b){
+  S.sort=(S.sort===a)?b:a;
+  S.page=0;
   closeSortPanel();
   render();
 }
