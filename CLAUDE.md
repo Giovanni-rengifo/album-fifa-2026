@@ -43,7 +43,7 @@ git push origin main
 Cada vez que se hagan cambios visuales o de lógica JS, **incrementar el número de versión** en `sw.js`:
 
 ```js
-const CACHE = 'road2026-v35'; // ← incrementar en cada deploy
+const CACHE = 'road2026-v40'; // ← incrementar en cada deploy
 ```
 
 **CRÍTICO**: Si se modifica `index.html` sin actualizar `sw.js`, los usuarios con la PWA instalada siguen viendo la versión anterior en caché.
@@ -77,7 +77,8 @@ Con SW v31+ esto ya no debería ocurrir (network-first). Si persiste: desinstala
 |---|---|
 | **Sección 1** | Header — título + badge de progreso global |
 | **Sección 2** | Barra de búsqueda |
-| **Sección 3** | Tab bar — Faltan / Tengo / Repes / Stats / Compartir / Backup / Agregar / Orden |
+| **Sección 3** | Tab bar — Faltan / Tengo / Repes / **Canje** / Stats / Compartir / Backup / Agregar |
+| **Sección 3.5** | Barra de acceso rápido sort (`#sort-quick`) — chips de íconos solo, entre tabs y grid |
 | **Sección 4** | Grid principal — cards de países (level 1) o láminas (level 2) |
 | **Sección 5** | Paginación — `< Pág. X de Y >` |
 
@@ -105,6 +106,18 @@ Usar `rem`, no `px`. Base: 16px. Excepciones puntuales (ej: `22px` para íconos 
 - Entry animations en cards: `@keyframes card-enter` con stagger via `--stagger` CSS var
 - `prefers-reduced-motion`: ya configurado, anula todas las transiciones
 
+### Animación direccional de paginación
+Las cards se deslizan de derecha a izquierda (→ siguiente) o izquierda a derecha (← anterior):
+```css
+@keyframes slide-from-right{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slide-from-left{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+#grid[data-dir="next"] .country-card{animation-name:slide-from-right}
+#grid[data-dir="prev"] .country-card{animation-name:slide-from-left}
+```
+- Variable `_pageDir` (global): `-1` prev, `0` neutro, `1` next — se resetea a 0 en cada render
+- `grid.dataset.dir` se asigna antes de limpiar `grid.innerHTML`
+- **NUNCA hacer `grid.style.display='none'` en el bloque inicial de render()** — causa flicker. Solo se oculta en los early returns de tabs no-grid (stats, share, backup, canje, agregar)
+
 ## Sección 3 — Tab Bar
 
 Todos los tabs tienen ícono FA + label de texto. Tamaño ícono: `1.125rem`. Touch target: `min-width:44px`.
@@ -114,43 +127,50 @@ Todos los tabs tienen ícono FA + label de texto. Tamaño ícono: `1.125rem`. To
 | Faltan | `tab-faltan` | `fa-xmark` | Cambia `S.tab` |
 | Tengo | `tab-tengo` | `fa-circle-check` | Cambia `S.tab` |
 | Repes | `tab-repes` | `fa-copy` | Cambia `S.tab` |
+| **Canje** | `tab-canje` | `fa-right-left` | Cambia `S.tab` |
 | Stats | `tab-stats` | `fa-chart-pie` | Cambia `S.tab` |
 | Compartir | `tab-share` | `fa-whatsapp` | Cambia `S.tab` |
 | Backup | `tab-backup` | `fa-floppy-disk` | Cambia `S.tab` |
 | Agregar | `tab-agregar` | `fa-circle-plus` | Cambia `S.tab` |
-| **Orden** | `tab-orden` | `fa-sort` | Abre sort panel (NO cambia `S.tab`) |
 
-### Panel de Orden (Sort Panel)
+> **`tab-orden` fue eliminado** — el sort panel todavía existe en DOM (`#sort-panel`) pero ya no hay botón en la tab bar para abrirlo. El acceso rápido al sort se hace desde la Sección 3.5.
 
-Bottom sheet `#sort-panel` — **7 opciones** en grid 3×2 + Grupo full-width.
+## Sección 3.5 — Sort Quick Bar (`#sort-quick`)
 
-#### Botones toggle (alternan dirección al tocarse de nuevo)
-| Botón | Alterna entre | Atributos HTML |
-|---|---|---|
-| A→Z / Z→A | `az` ↔ `za` | `data-toggle-a="az" data-toggle-b="za"` |
-| Pág.↑ / Pág.↓ | `pag-asc` ↔ `pag-desc` | `data-toggle-a="pag-asc" data-toggle-b="pag-desc"` |
-| Más lám. / Menos lám. | `owned-desc` ↔ `owned-asc` | `data-toggle-a="owned-desc" data-toggle-b="owned-asc"` |
+Fila de chips de íconos entre la tab bar y el grid. **Solo se muestra en level 1** y cuando el tab activo es `faltan`, `tengo` o `repes`.
 
-El ícono y label del botón se actualizan dinámicamente al abrir el panel (ver `TOGGLE_CFG` en JS y `openSortPanel()`).
+```css
+#sort-quick{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;flex-shrink:0}
+.sq-chip{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:34px;height:30px;
+  border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer}
+.sq-chip.active{background:rgba(96,165,250,.15);border-color:var(--accent);color:var(--accent)}
+```
 
-#### Botones simples (contextuales por tab)
-| Botón | Sort value | Tab Faltan | Tab Tengo | Tab Repes |
-|---|---|---|---|---|
-| Escudos | `escudo` | Países sin escudo (#1) | Países con escudo | Países con escudo repetido |
-| Arqueros | `arquero` | Países sin arquero (#2) | Países con arquero | Países con arquero repetido |
-| Equipos | `equipo` | Países sin equipo (#13) | Países con equipo | Países con equipo repetido |
-| **Grupo** | `grupo` | Ordena A→B→...→L | igual | igual |
+**6 chips (solo íconos, sin texto):**
 
-Todos excluyen FWC. El sort `grupo` ordena alfabéticamente por letra de grupo (A-L), FWC al final.
+| # | Ícono | Sort | Comportamiento |
+|---|---|---|---|
+| 1 | `fa-arrow-down-a-z` / `fa-arrow-down-z-a` | `az` ↔ `za` | Toggle |
+| 2 | `fa-arrow-down-1-9` / `fa-arrow-down-9-1` | `pag-asc` ↔ `pag-desc` | Toggle |
+| 3 | `fa-shield-halved` | `escudo` | Simple |
+| 4 | `fa-hands` | `arquero` | Simple |
+| 5 | `fa-users` | `equipo` | Simple |
+| 6 | `fa-layer-group` | `grupo` | Simple |
 
-#### Funciones del sort panel
-| Función | Qué hace |
-|---|---|
-| `toggleSortPanel()` | Abre/cierra el panel |
-| `openSortPanel()` | Abre, actualiza íconos/labels de toggles, marca active |
-| `closeSortPanel()` | Cierra, quita highlight de tab-orden |
-| `applySort(s)` | Aplica sort simple, cierra panel |
-| `applyToggleSort(a,b)` | Alterna entre a y b según `S.sort` actual |
+Los chips de toggle muestran el ícono del estado actual (via `TOGGLE_CFG`). Función: `renderSortQuick()`.
+
+### `closeSortPanel()` — null guard obligatorio
+El tab-orden fue eliminado del DOM. `closeSortPanel()` hace null check antes de acceder:
+```js
+function closeSortPanel(){
+  document.getElementById('sort-panel').style.display='none';
+  var t=document.getElementById('tab-orden'); if(t) t.classList.remove('tab-sort-on');
+}
+```
+
+### Sort panel (legacy — accesible desde `#sort-panel` en DOM)
+
+Bottom sheet — todavía funcional si se llama `openSortPanel()` directamente. Botones toggle y simples:
 
 #### `S.sort` posibles valores
 `az` | `za` | `pag-asc` | `pag-desc` | `owned-desc` | `owned-asc` | `escudo` | `arquero` | `equipo` | `grupo` | `pct`
@@ -242,6 +262,21 @@ Fondo unificado para todos: `rgba(232,237,242,0.07)`
 - Láminas no poseídas → clase `ghost`
 - Ghost: íconos y número al 20% opacidad, `.repe-ctrl` con `visibility:hidden`
 - Lógica: `S.tab==='tengo' && !have` → `'ghost'`
+- **Efecto secundario útil**: `.repe-ctrl { visibility:hidden }` en ghost cards también oculta automáticamente el botón de deal sin lógica extra
+
+### Botón de Deal en cards de láminas (Level 2)
+El bloque de control de cada lámina tiene **3 botones**: `−` | `⇄ (deal)` | `+`
+- Se eliminó el texto del contador entre `−` y `+`; el botón deal ocupa ese espacio central
+- `⇄` activo (en deal): clase `in-deal` → fondo ámbar, color `#fbbf24`
+- En tab **Faltan**: agrega/quita de `DEAL.want` (quiero recibir)
+- En tab **Tengo** o **Repes**: agrega/quita de `DEAL.give` (voy a dar)
+- El botón no aparece en ghost cards (oculto via `visibility:hidden` de `.repe-ctrl`)
+
+```css
+.repe-btn.deal{background:rgba(96,165,250,.07);color:var(--text-dim)}
+.repe-btn.deal:hover{background:rgba(96,165,250,.2);color:var(--accent)}
+.repe-btn.deal.in-deal{background:rgba(251,191,36,.18);color:#fbbf24}
+```
 
 ## Estructura JS (en index.html)
 
@@ -250,13 +285,22 @@ Fondo unificado para todos: `rgba(232,237,242,0.07)`
 var S = {
   level: 1,        // 1=grilla países, 2=láminas de un país
   country: null,   // país seleccionado en level 2
-  tab: 'faltan',   // tab activo: faltan|tengo|repes|agregar|stats|share|backup
+  tab: 'faltan',   // tab activo: faltan|tengo|repes|canje|agregar|stats|share|backup
   page: 0,
   q: '',           // query de búsqueda
   db: {},          // datos de láminas
   sort: 'az'       // az|za|pag-asc|pag-desc|owned-desc|owned-asc|escudo|arquero|equipo|grupo|pct
 }
+
+var _pageDir = 0;  // dirección de paginación: -1=prev, 0=neutro, 1=next — se resetea en render()
+
+var DEAL = {       // estado transiente del canje (NO se persiste en localStorage)
+  give: [],        // [{code, n}] — láminas que voy a dar (tab Tengo/Repes)
+  want: []         // [{code, n}] — láminas que quiero recibir (tab Faltan)
+};
 ```
+
+**`DEAL` es in-memory solamente.** Al confirmar (`confirmDeal()`), los cambios se aplican a `S.db` y se guardan. Al rechazar (`clearDeal()`), se limpia sin persistir.
 
 ### Países
 - 48 países + FWC (especiales). Total: 980 láminas
@@ -270,8 +314,7 @@ var S = {
 - `saveDB()` / `initDB()` — carga con migración de formato antiguo
 
 ### Tabs disponibles
-`faltan` | `tengo` | `repes` | `agregar` | `stats` | `share` | `backup`
-(El botón `orden` NO modifica `S.tab`)
+`faltan` | `tengo` | `repes` | `canje` | `agregar` | `stats` | `share` | `backup`
 
 ### Funciones clave
 | Función | Qué hace |
@@ -283,10 +326,51 @@ var S = {
 | `renderStats()` | Genera vista de estadísticas (muestra `X/20`, no %) |
 | `renderShare()` | Genera texto para compartir por WhatsApp |
 | `renderBackup()` | Genera UI de export/import JSON |
-| `applySort(s)` | Aplica sort simple desde panel |
+| `renderCanje()` | Genera vista de canje (Posible Canje / Posible Intercambio) |
+| `renderSortQuick()` | Renderiza los chips de sort rápido en `#sort-quick` |
+| `applySort(s)` | Aplica sort simple, cierra sort panel |
 | `applyToggleSort(a,b)` | Alterna sort entre dos valores |
 | `openSortPanel()` | Abre panel y actualiza íconos/labels de toggles |
+| `closeSortPanel()` | Cierra panel — tiene null guard para `tab-orden` eliminado |
+| `toggleDeal(code,n)` | Agrega/quita lámina del DEAL (give o want según tab) + re-render |
+| `removeDealItem(code,n,listType)` | Quita lámina del DEAL desde vista Canje → llama `renderCanje()` |
+| `confirmDeal()` | Aplica deal: marca want como owned, descuenta give. Guarda y vuelve a Faltan |
+| `clearDeal()` | Limpia DEAL sin persistir. Toast "Canje rechazado" |
 | `stickerLabel(c,n)` | Retorna HTML con ícono FA según tipo de lámina |
+| `nextPage()` | Avanza página solo si `next-btn` no está disabled — evita animación falsa |
+| `prevPage()` | Retrocede página solo si `prev-btn` no está disabled — evita animación falsa |
+
+## Tab Canje — Arquitectura
+
+### Flujo de uso
+1. Usuario navega a tab **Faltan** → toca ⇄ en láminas que quiere **recibir** → van a `DEAL.want`
+2. Usuario navega a tab **Tengo** o **Repes** → toca ⇄ en láminas que va a **dar** → van a `DEAL.give`
+3. Usuario va a tab **Canje** → ve ambas listas, puede quitar ítems, confirmar o rechazar
+
+### Vista Canje (renderCanje)
+Dos secciones diferenciadas con bordes de color:
+
+| Sección | Borde | Fondo | Icono | Descripción |
+|---|---|---|---|---|
+| **POSIBLE CANJE** (arriba) | verde `rgba(34,197,94,.45)` | `rgba(34,197,94,.04)` | `fa-arrow-down-to-bracket` | "Láminas que voy a recibir" |
+| **POSIBLE INTERCAMBIO** (abajo) | ámbar `rgba(251,191,36,.45)` | `rgba(251,191,36,.04)` | `fa-arrow-up-from-bracket` | "Láminas que voy a dar" |
+
+### Botones de acción (aparecen solo si hay ítems en alguna lista)
+- **Confirmar Canje** (`share-btn green`, `flex:1`): aplica el deal
+- **Rechazar** (rojo, `flex:0 0 auto`, `width:auto`): limpia el deal
+
+> **CRÍTICO**: El botón rechazar necesita `width:auto` inline — la clase `.share-btn` tiene `width:100%` que con `flex:0 0 auto` (flex-basis:auto) se comporta como un valor de flex-basis y expande el botón al 100% del contenedor. `width:auto` inline lo sobreescribe.
+
+### Cada ítem del deal muestra
+Bandera (22px) + código + ícono tipo lámina + número + botón quitar (×)
+
+```css
+.canje-item{display:flex;align-items:center;gap:8px;background:var(--bg-page);
+  border:1px solid var(--border);border-radius:8px;padding:7px 10px}
+.canje-remove{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
+  border-radius:6px;color:var(--red);cursor:pointer;min-width:30px;min-height:30px;
+  display:flex;align-items:center;justify-content:center}
+```
 
 ## Stats
 
@@ -319,11 +403,38 @@ var S = {
 **Causa**: Filtraban siempre por `!owned` (faltantes) sin importar el tab activo.
 **Solución**: Los sorts de tipo de lámina ahora leen `S.tab` y filtran según contexto: `faltan`→ sin esa lámina, `tengo`→ con esa lámina, `repes`→ con esa lámina repetida.
 
+### Parpadeo (flicker) al cambiar de página
+**Causa**: Al inicio de cada `render()` se hacía `grid.style.display='none'` para ocultar el grid, causando un reflow/repaint visible en cada re-render — incluyendo paginación.
+**Solución**: Eliminar esa línea del bloque inicial. El grid se oculta **solo** en los early returns de tabs no-grid (`stats`, `share`, `backup`, `canje`, `agregar`). Para las vistas de grid, simplemente se sobreescribe `grid.innerHTML` directamente.
+
+### Animación falsa al llegar al límite de páginas
+**Causa**: `nextPage()` y `prevPage()` llamaban `render()` incluso si `S.page` ya estaba en el máximo/mínimo (el cap ocurría dentro de `render()` pero la animación ya se había triggerado).
+**Solución**: Chequear si el botón de navegación está `disabled` antes de actuar:
+```js
+function nextPage(){if(document.getElementById('next-btn').disabled)return; _pageDir=1; S.page++; render();}
+function prevPage(){if(document.getElementById('prev-btn').disabled)return; _pageDir=-1; S.page--; render();}
+```
+
+### `closeSortPanel()` lanzaba error tras eliminar tab-orden
+**Causa**: `document.getElementById('tab-orden').classList.remove(...)` — cuando el elemento no existe en el DOM, `.classList` falla con TypeError.
+**Solución**: Null guard: `var t=document.getElementById('tab-orden'); if(t) t.classList.remove('tab-sort-on');`
+
+### Botón "Rechazar" en Canje se expandía a 456px de ancho
+**Causa**: La clase `.share-btn` tiene `width:100%`. Con `flex:0 0 auto` (flex-basis:auto), el `width:100%` actúa como flex-basis y expande el botón al 100% del contenedor flex.
+**Solución**: Agregar `width:auto` inline en el botón rechazar para sobreescribir el CSS de la clase.
+
+### Botones "quitar" en lista Canje eran demasiado pequeños (16×20px)
+**Causa**: `.canje-remove` no tenía min-size explícito, solo padding mínimo.
+**Solución**: `min-width:30px; min-height:30px; display:flex; align-items:center; justify-content:center`
+
 ## Estado actual del proyecto
 
-- **SW versión**: `road2026-v35`
+- **SW versión**: `road2026-v40`
 - **Grid**: 4 columnas, `PER_PAGE = 16`
-- **Sort panel**: 7 opciones — 3 toggles (A↕Z, Pág.↕, Láminas↕) + Escudos/Arqueros/Equipos (contextuales) + Grupo (full-width)
+- **Tab bar**: 8 tabs — Faltan / Tengo / Repes / **Canje** / Stats / Compartir / Backup / Agregar (sin Orden)
+- **Sort quick bar**: 6 chips de íconos entre tabs y grid — A↕Z, Pág.↕, Escudo, Arquero, Equipo, Grupo
+- **Feature Canje**: deal button en cards de láminas, vista Canje con Posible Canje (verde) + Posible Intercambio (ámbar), flujo confirmar/rechazar
+- **Paginación**: animación direccional (slide-from-right / slide-from-left) sin flicker ni animación falsa en límites
 - **Grupos A-L**: implementados en datos y UI (badge `GRP X` en cards)
 - **Badge repes**: `font-size: 13px` (mejorado de 9px)
 
