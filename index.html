@@ -244,9 +244,9 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
 .group-tile:active{transform:scale(.95)}
 @media (hover:hover) and (pointer:fine){.group-tile:hover{background:var(--bg-hover)}}
 .group-letter{font-size:1.5rem;font-weight:900;color:var(--accent);line-height:1}
-.group-mini-flags{display:flex;gap:2px;justify-content:center}
-.group-mini-flag{width:16px;height:16px;border-radius:50%;overflow:hidden;background:rgba(0,0,0,.2);flex-shrink:0}
-.group-mini-flag img{width:16px;height:16px;object-fit:cover;border-radius:50%;display:block}
+.group-mini-flags{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}
+.group-mini-flag{width:24px;height:24px;border-radius:50%;overflow:hidden;background:rgba(0,0,0,.2)}
+.group-mini-flag img{width:24px;height:24px;object-fit:cover;border-radius:50%;display:block}
 .group-prog-bar{width:100%;background:rgba(0,0,0,.4);height:3px;border-radius:999px;overflow:hidden;margin-top:1px}
 .group-prog-fill{height:100%;border-radius:999px;background:var(--green);width:100%;transform-origin:left;will-change:transform}
 .group-count{font-size:0.5rem;color:var(--text-muted);font-weight:700}
