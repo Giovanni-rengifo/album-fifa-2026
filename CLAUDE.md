@@ -121,19 +121,67 @@ Las cards se deslizan de derecha a izquierda (→ siguiente) o izquierda a derec
 ## Sección 3 — Tab Bar
 
 Todos los tabs tienen ícono FA + label de texto. Tamaño ícono: `1.125rem`. Touch target: `min-width:44px`.
+La tab bar tiene `overflow-x:auto` — los 3 últimos tabs son accesibles con scroll horizontal.
 
 | Tab | ID | Ícono | Comportamiento |
 |---|---|---|---|
+| **Grupos** | `tab-grupos` | `fa-border-all` | Cambia `S.tab` — vista de grupos A-L |
 | Faltan | `tab-faltan` | `fa-xmark` | Cambia `S.tab` |
 | Tengo | `tab-tengo` | `fa-circle-check` | Cambia `S.tab` |
 | Repes | `tab-repes` | `fa-copy` | Cambia `S.tab` |
 | **Canje** | `tab-canje` | `fa-right-left` | Cambia `S.tab` |
 | Stats | `tab-stats` | `fa-chart-pie` | Cambia `S.tab` |
-| Compartir | `tab-share` | `fa-whatsapp` | Cambia `S.tab` |
-| Backup | `tab-backup` | `fa-floppy-disk` | Cambia `S.tab` |
-| Agregar | `tab-agregar` | `fa-circle-plus` | Cambia `S.tab` |
+| *(scroll)* Compartir | `tab-share` | `fa-whatsapp` | Cambia `S.tab` |
+| *(scroll)* Backup | `tab-backup` | `fa-floppy-disk` | Cambia `S.tab` |
+| *(scroll)* Agregar | `tab-agregar` | `fa-circle-plus` | Cambia `S.tab` |
 
 > **`tab-orden` fue eliminado** — el sort panel todavía existe en DOM (`#sort-panel`) pero ya no hay botón en la tab bar para abrirlo. El acceso rápido al sort se hace desde la Sección 3.5.
+
+## Tab Grupos — Arquitectura
+
+Vista jerárquica de 3 niveles, sin paginación ni footer en ningún nivel.
+
+### Flujo de navegación
+1. `S.tab==='grupos'` + `S.groupSel===null` → **Tiles de grupos** (12 tiles A-L, grid 3 columnas)
+2. Tap en un grupo → `S.groupSel='A'` → **4 países del grupo** (grid 2 columnas, llena pantalla)
+3. Tap en un país → `S.level=2`, `S.country=c` → **20 láminas** (igual que level 2 regular, pero muestra TODAS sin filtrar por tab)
+
+### Diferencias con level 2 regular
+- `getStickerListAll(c)` — retorna todos los `from..to` sin filtrar por `owned`/`repes`
+- Estado de cada card: `rep>0 → repe`, `have → tengo`, else `falta` (sin ghost cards)
+- Deal button va siempre a `DEAL.give` (S.tab==='grupos' no es 'faltan')
+- Footer siempre oculto
+
+### Estado nuevo en S
+```js
+S.groupSel = null; // null o 'A'..'L' — grupo seleccionado en vista Grupos
+```
+
+### Navegación atrás (`goBack`)
+```js
+if(S.tab==='grupos'){
+  if(S.level===2) → S.level=1, S.country=null  // láminas → 4 países
+  else if(S.groupSel) → S.groupSel=null          // 4 países → tiles de grupos
+}
+```
+
+### `changeTab()` — lógica especial para grupos
+Cuando se navega A grupos desde level 2, se auto-asigna `S.groupSel = S.country.group`.
+
+### Tiles de grupos (nivel 0)
+Cada tile muestra: letra grande, 4 mini-banderas (16px), barra de progreso, contador `X/80`.
+CSS: `.group-tile`, `.group-letter`, `.group-mini-flags`, `.group-prog-bar`, `.group-count`.
+
+### Cards de países en grupo (nivel 1)
+Grid 2×2 que llena la pantalla con `grid-auto-rows:1fr`.
+Cards con bandera grande (54px), código, nombre, barra de progreso, `X/20`.
+CSS: `.grupo-country-card`, `.grupo-flag-circle`, `.grupo-country-name`, `.grupo-prog-bar`.
+
+### Sort quick bar
+Oculta en el tab Grupos (`'grupos'` está en la lista de exclusión de `renderSortQuick()`).
+
+### FWC en Grupos
+FWC no tiene `group`, por lo que no aparece en ningún tile ni en la vista de grupos.
 
 ## Sección 3.5 — Sort Quick Bar (`#sort-quick`)
 
@@ -285,11 +333,12 @@ El bloque de control de cada lámina tiene **3 botones**: `−` | `⇄ (deal)` |
 var S = {
   level: 1,        // 1=grilla países, 2=láminas de un país
   country: null,   // país seleccionado en level 2
-  tab: 'faltan',   // tab activo: faltan|tengo|repes|canje|agregar|stats|share|backup
+  tab: 'faltan',   // tab activo: grupos|faltan|tengo|repes|canje|agregar|stats|share|backup
   page: 0,
   q: '',           // query de búsqueda
   db: {},          // datos de láminas
-  sort: 'az'       // az|za|pag-asc|pag-desc|owned-desc|owned-asc|escudo|arquero|equipo|grupo|pct
+  sort: 'az',      // az|za|pag-asc|pag-desc|owned-desc|owned-asc|escudo|arquero|equipo|grupo|pct
+  groupSel: null   // null o 'A'..'L' — grupo seleccionado en vista Grupos
 }
 
 var _pageDir = 0;  // dirección de paginación: -1=prev, 0=neutro, 1=next — se resetea en render()
@@ -339,6 +388,10 @@ var DEAL = {       // estado transiente del canje (NO se persiste en localStorag
 | `stickerLabel(c,n)` | Retorna HTML con ícono FA según tipo de lámina |
 | `nextPage()` | Avanza página solo si `next-btn` no está disabled — evita animación falsa |
 | `prevPage()` | Retrocede página solo si `prev-btn` no está disabled — evita animación falsa |
+| `getStickerListAll(c)` | Retorna todos los números `from..to` sin filtrar (usado en vista Grupos level 2) |
+| `selectGroup(g)` | Asigna `S.groupSel=g` y llama `render()` |
+| `enterGrupoCountry(code)` | Asigna `S.country`, `S.level=2` y llama `render()` desde vista Grupos |
+| `renderGruposView()` | Renderiza tiles de grupos (level 0) o 4 países (level 1) en `#grupos-view` |
 
 ## Tab Canje — Arquitectura
 
@@ -429,10 +482,11 @@ function prevPage(){if(document.getElementById('prev-btn').disabled)return; _pag
 
 ## Estado actual del proyecto
 
-- **SW versión**: `road2026-v40`
+- **SW versión**: `road2026-v41`
 - **Grid**: 4 columnas, `PER_PAGE = 16`
-- **Tab bar**: 8 tabs — Faltan / Tengo / Repes / **Canje** / Stats / Compartir / Backup / Agregar (sin Orden)
-- **Sort quick bar**: 6 chips de íconos entre tabs y grid — A↕Z, Pág.↕, Escudo, Arquero, Equipo, Grupo
+- **Tab bar**: 9 tabs — **Grupos** / Faltan / Tengo / Repes / Canje / Stats / *(scroll)* Compartir / Backup / Agregar
+- **Sort quick bar**: 6 chips de íconos entre tabs y grid — A↕Z, Pág.↕, Escudo, Arquero, Equipo, Grupo (oculto en tab Grupos)
+- **Feature Grupos**: vista jerárquica 3 niveles — tiles A-L → 4 países → 20 láminas completas
 - **Feature Canje**: deal button en cards de láminas, vista Canje con Posible Canje (verde) + Posible Intercambio (ámbar), flujo confirmar/rechazar
 - **Paginación**: animación direccional (slide-from-right / slide-from-left) sin flicker ni animación falsa en límites
 - **Grupos A-L**: implementados en datos y UI (badge `GRP X` en cards)

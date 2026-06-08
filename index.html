@@ -235,6 +235,30 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
 .canje-icon{font-size:0.9375rem;display:flex;align-items:center;color:var(--text-muted);min-width:18px}
 .canje-remove{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;color:var(--red);cursor:pointer;min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;transition:background .15s;flex-shrink:0}
 .canje-remove:hover{background:rgba(239,68,68,.2)}
+.tab.active-grupos{background:#0f3460;color:var(--white)}
+#grupos-view{display:flex;flex-direction:column;flex:1;min-height:0}
+.grupos-inner{display:grid;gap:6px;flex:1;min-height:0}
+.grupos-inner.tiles{grid-template-columns:repeat(3,1fr);align-content:start}
+.grupos-inner.countries{grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr}
+.group-tile{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*30ms);font-family:inherit;color:var(--white);appearance:none;-webkit-appearance:none;text-align:center}
+.group-tile:active{transform:scale(.95)}
+@media (hover:hover) and (pointer:fine){.group-tile:hover{background:var(--bg-hover)}}
+.group-letter{font-size:1.5rem;font-weight:900;color:var(--accent);line-height:1}
+.group-mini-flags{display:flex;gap:2px;justify-content:center}
+.group-mini-flag{width:16px;height:16px;border-radius:50%;overflow:hidden;background:rgba(0,0,0,.2);flex-shrink:0}
+.group-mini-flag img{width:16px;height:16px;object-fit:cover;border-radius:50%;display:block}
+.group-prog-bar{width:100%;background:rgba(0,0,0,.4);height:3px;border-radius:999px;overflow:hidden;margin-top:1px}
+.group-prog-fill{height:100%;border-radius:999px;background:var(--green);width:100%;transform-origin:left;will-change:transform}
+.group-count{font-size:0.5rem;color:var(--text-muted);font-weight:700}
+.grupo-country-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*40ms);font-family:inherit;color:var(--white);appearance:none;-webkit-appearance:none;text-align:center;position:relative}
+.grupo-country-card:active{transform:scale(.95)}
+@media (hover:hover) and (pointer:fine){.grupo-country-card:hover{background:var(--bg-hover)}}
+.grupo-country-card.complete{border-color:var(--accent);box-shadow:0 0 0 1px rgba(96,165,250,.3)}
+.grupo-flag-circle{width:54px;height:54px;border-radius:50%;background:rgba(0,0,0,.2);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.grupo-flag-circle img{width:54px;height:54px;object-fit:cover;border-radius:50%}
+.grupo-country-name{font-size:0.5625rem;color:var(--text-muted);line-height:1.2;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grupo-prog-bar{width:80%;background:rgba(0,0,0,.4);height:5px;border-radius:999px;overflow:hidden}
+.grupo-prog-fill{background:var(--green);height:100%;border-radius:999px;width:100%;transform-origin:left;will-change:transform}
 </style>
 </head>
 <body>
@@ -254,6 +278,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
     <button id="clear-btn" aria-label="Limpiar búsqueda"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></button>
   </div>
   <div class="tabs" role="tablist">
+    <button class="tab" id="tab-grupos" role="tab" aria-selected="false" onclick="changeTab('grupos')"><span class="tab-icon-wrap"><i class="fa-solid fa-border-all" aria-hidden="true"></i></span><span class="tab-label">Grupos</span></button>
     <button class="tab" id="tab-faltan" role="tab" aria-selected="true" onclick="changeTab('faltan')"><span class="tab-icon-wrap"><i class="fa-solid fa-xmark" aria-hidden="true"></i></span><span class="tab-label">Faltan</span></button>
     <button class="tab" id="tab-tengo" role="tab" aria-selected="false" onclick="changeTab('tengo')"><span class="tab-icon-wrap"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span><span class="tab-label">Tengo</span></button>
     <button class="tab" id="tab-repes" role="tab" aria-selected="false" onclick="changeTab('repes')"><span class="tab-icon-wrap"><i class="fa-solid fa-copy" aria-hidden="true"></i></span><span class="tab-label">Repes</span></button>
@@ -275,6 +300,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
   <div id="backup-view" style="display:none"></div>
   <div id="agregar-view" style="display:none"></div>
   <div id="canje-view" style="display:none"></div>
+  <div id="grupos-view" style="display:none"></div>
   <div class="no-results" id="no-results"><i class="fa-regular fa-folder-open" aria-hidden="true"></i><p>Sin resultados</p></div>
 </main>
 <footer id="footer">
@@ -379,7 +405,7 @@ var COUNTRIES = COUNTRIES_RAW.map(function(c){
 COUNTRIES.push({code:"FWC",name:"Especiales FIFA",iso:"fwc",page:"Final",from:0,to:19,group:''});
 
 var PER_PAGE = 16;
-var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az'};
+var S = {level:1, country:null, tab:'faltan', page:0, q:'', db:{}, sort:'az', groupSel:null};
 var _pageDir = 0; // -1=prev, 0=neutro, 1=next
 var DEAL = {give:[], want:[]}; // {code, n}
 
@@ -490,7 +516,7 @@ function closeSortPanel(){
 }
 function renderSortQuick(){
   var el=document.getElementById('sort-quick');
-  if(S.level!==1||['stats','share','backup','agregar','canje'].indexOf(S.tab)>-1){el.style.display='none';return;}
+  if(S.level!==1||['stats','share','backup','agregar','canje','grupos'].indexOf(S.tab)>-1){el.style.display='none';return;}
   el.style.display='flex';
   var azA=['az','za'].indexOf(S.sort)>-1;
   var azC=azA?S.sort:'az';
@@ -522,8 +548,9 @@ function applyToggleSort(a,b){
 }
 
 function changeTab(t){
+  if(t==='grupos'&&S.level===2&&S.country) S.groupSel=S.country.group||null;
   S.tab=t; S.page=0;
-  ['faltan','tengo','repes','canje','stats','share','backup','agregar'].forEach(function(x){
+  ['grupos','faltan','tengo','repes','canje','stats','share','backup','agregar'].forEach(function(x){
     var btn=document.getElementById('tab-'+x);
     btn.className='tab'+(x===t?' active-'+x:'');
     btn.setAttribute('aria-selected',x===t?'true':'false');
@@ -588,6 +615,54 @@ function getStickerList(c){
     if(S.tab==='repes'  && (rec.repes[i]||0)>0)   arr.push(i);
   }
   return arr;
+}
+
+function getStickerListAll(c){var arr=[];for(var i=c.from;i<=c.to;i++) arr.push(i);return arr;}
+
+var GROUP_LETTERS=['A','B','C','D','E','F','G','H','I','J','K','L'];
+function selectGroup(g){S.groupSel=g;render();}
+function enterGrupoCountry(code){
+  var c=null;for(var i=0;i<COUNTRIES.length;i++){if(COUNTRIES[i].code===code){c=COUNTRIES[i];break;}}
+  S.country=c;S.level=2;S.page=0;render();
+}
+function renderGruposView(){
+  var v=document.getElementById('grupos-view');
+  v.style.display='flex';
+  if(S.groupSel===null){
+    var html='<div class="grupos-inner tiles">';
+    GROUP_LETTERS.forEach(function(g,idx){
+      var cs=COUNTRIES.filter(function(c){return c.group===g;});
+      var tot=0,own=0;
+      cs.forEach(function(c){tot+=countTotal(c);own+=countOwned(c);});
+      var pct=tot?own/tot:0;
+      var flags=cs.map(function(c){return '<div class="group-mini-flag"><img src="https://flagcdn.com/w80/'+c.iso+'.png" loading="lazy" alt="'+c.code+'"></div>';}).join('');
+      html+='<button type="button" class="group-tile" style="--stagger:'+idx+'" onclick="selectGroup(\''+g+'\')">'+
+        '<div class="group-letter">'+g+'</div>'+
+        '<div class="group-mini-flags">'+flags+'</div>'+
+        '<div class="group-prog-bar"><div class="group-prog-fill" style="transform:scaleX('+pct+')"></div></div>'+
+        '<div class="group-count">'+own+'/'+tot+'</div>'+
+        '</button>';
+    });
+    html+='</div>';
+    v.innerHTML=html;
+  } else {
+    var cs=COUNTRIES.filter(function(c){return c.group===S.groupSel;});
+    var html='<div class="grupos-inner countries">';
+    cs.forEach(function(c,idx){
+      var o=countOwned(c),t=countTotal(c),pct=Math.round(o/t*100);
+      var isComplete=(o===t);
+      html+='<button type="button" class="grupo-country-card'+(isComplete?' complete':'')+'" style="--stagger:'+idx+'" onclick="enterGrupoCountry(\''+c.code+'\')">'+
+        (isComplete?'<div class="complete-badge">★ COMPLETO</div>':'')+
+        '<div class="grupo-flag-circle"><img src="https://flagcdn.com/w80/'+c.iso+'.png" alt="'+c.name+'" loading="lazy"></div>'+
+        '<div class="country-code" style="font-size:0.9375rem">'+c.code+'</div>'+
+        '<div class="grupo-country-name">'+c.name+'</div>'+
+        '<div class="grupo-prog-bar"><div class="grupo-prog-fill" style="transform:scaleX('+pct/100+')"></div></div>'+
+        '<div class="progress-count" style="font-size:0.8125rem">'+o+'/'+t+'</div>'+
+        '</button>';
+    });
+    html+='</div>';
+    v.innerHTML=html;
+  }
 }
 
 function stickerLabel(c,n){
@@ -940,6 +1015,7 @@ function render(){
   var bkv=document.getElementById('backup-view');
   var agv=document.getElementById('agregar-view');
   var cnv=document.getElementById('canje-view');
+  var gv=document.getElementById('grupos-view');
   var nr=document.getElementById('no-results');
   var bwrap=document.getElementById('back-wrap');
 
@@ -951,6 +1027,7 @@ function render(){
   bkv.style.display='none';
   agv.style.display='none';
   cnv.style.display='none';
+  gv.style.display='none';
   nr.style.display='none';
   bwrap.style.display='none';
   footer.style.display='block';
@@ -962,6 +1039,48 @@ function render(){
   if(S.tab==='canje'){ grid.style.display='none'; renderCanje(); footer.style.display='none'; return; }
   if(S.tab==='agregar'){ grid.style.display='none'; document.removeEventListener('click',agDdOutside); renderAgregar(); footer.style.display='none'; return; }
   document.removeEventListener('click',agDdOutside);
+
+  if(S.tab==='grupos'){
+    footer.style.display='none';
+    if(S.level===2&&S.country){
+      if(!S.groupSel) S.groupSel=S.country.group||null;
+      bwrap.style.display='block';
+      document.getElementById('back-label').textContent='Grupo '+(S.groupSel||'?')+' — '+S.country.code+' (Pág. '+S.country.page+')';
+      grid.style.display='grid';
+      grid.style.gridAutoRows='minmax(68px,1fr)';
+      grid.innerHTML='';
+      var c=S.country;
+      getStickerListAll(c).forEach(function(n){
+        var rec=S.db[c.code];
+        var have=rec.owned[n]===true;
+        var rep=rec.repes[n]||0;
+        var numLabel=n===0?'00':String(n);
+        var div=document.createElement('div');
+        var specialClass=c.code==='FWC'?' especial':n===1?' escudo':n===2?' arquero':n===13?' equipo':'';
+        var stateClass=rep>0?'repe':have?'tengo':'falta';
+        div.className='sticker-card'+specialClass+' '+stateClass;
+        var inDeal=DEAL.give.some(function(x){return x.code===c.code&&x.n===n;});
+        div.innerHTML=(rep>0?'<div class="repe-badge">+'+rep+'</div>':'')+
+          '<div class="sticker-top">'+
+            '<div class="sticker-num">'+c.code+' '+numLabel+'</div>'+
+            '<div class="sticker-label">'+stickerLabel(c,n)+'</div>'+
+          '</div>'+
+          '<div class="repe-ctrl">'+
+            '<button type="button" class="repe-btn minus" onclick="changeRepe('+n+',-1)" aria-label="Quitar '+numLabel+'"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>'+
+            '<button type="button" class="repe-btn deal'+(inDeal?' in-deal':'')+'" onclick="toggleDeal(\''+c.code+'\','+n+')" aria-label="Canje"><i class="fa-solid fa-right-left" aria-hidden="true"></i></button>'+
+            '<button type="button" class="repe-btn plus" onclick="changeRepe('+n+',1)" aria-label="Agregar '+numLabel+'"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>'+
+          '</div>';
+        grid.appendChild(div);
+      });
+    } else {
+      grid.style.display='none';
+      bwrap.style.display=S.groupSel?'block':'none';
+      if(S.groupSel) document.getElementById('back-label').textContent='Todos los grupos';
+      renderGruposView();
+    }
+    updateGlobal();
+    return;
+  }
 
   // Obtener items según nivel
   var items = S.level===1 ? getCountryList() : getStickerList(S.country);
@@ -1075,7 +1194,14 @@ function changeRepe(n,val){
   render();
 }
 
-function goBack(){S.level=1;S.country=null;S.page=0;render();}
+function goBack(){
+  if(S.tab==='grupos'){
+    if(S.level===2){S.level=1;S.country=null;S.page=0;render();}
+    else if(S.groupSel!==null){S.groupSel=null;render();}
+  } else {
+    S.level=1;S.country=null;S.page=0;render();
+  }
+}
 function nextPage(){if(document.getElementById('next-btn').disabled)return;_pageDir=1;S.page++;render();}
 function prevPage(){if(document.getElementById('prev-btn').disabled)return;_pageDir=-1;S.page--;render();}
 
