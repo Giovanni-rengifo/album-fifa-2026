@@ -210,6 +210,10 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
 }
+@keyframes grupos-enter{
+  from{opacity:0}
+  to{opacity:1}
+}
 @keyframes slide-from-right{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:translateX(0)}}
 @keyframes slide-from-left{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
 #grid[data-dir="next"] .country-card{animation-name:slide-from-right}
@@ -240,7 +244,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
 .grupos-inner{position:absolute;inset:0;display:grid;gap:6px}
 .grupos-inner.tiles{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr)}
 .grupos-inner.countries{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
-.group-tile{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*30ms);font-family:inherit;color:var(--white);appearance:none;-webkit-appearance:none;text-align:center}
+.group-tile{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;width:100%;animation:grupos-enter 150ms ease both;font-family:inherit;color:var(--white);appearance:none;-webkit-appearance:none;text-align:center}
 .group-tile:active{transform:scale(.95)}
 @media (hover:hover) and (pointer:fine){.group-tile:hover{background:var(--bg-hover)}}
 .group-letter{font-size:1.5rem;font-weight:900;color:var(--accent);line-height:1}
@@ -250,7 +254,7 @@ footer{background:var(--bg-surface);border-top:1px solid var(--border-soft);padd
 .group-prog-bar{width:100%;background:rgba(0,0,0,.4);height:3px;border-radius:999px;overflow:hidden;margin-top:1px}
 .group-prog-fill{height:100%;border-radius:999px;background:var(--green);width:100%;transform-origin:left;will-change:transform}
 .group-count{font-size:0.5rem;color:var(--text-muted);font-weight:700}
-.grupo-country-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;width:100%;animation:card-enter 180ms var(--ease-out) both;animation-delay:calc(var(--stagger,0)*40ms);font-family:inherit;color:var(--white);appearance:none;-webkit-appearance:none;text-align:center;position:relative}
+.grupo-country-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:transform 160ms var(--ease-out),background-color 150ms ease;width:100%;animation:grupos-enter 150ms ease both;font-family:inherit;color:var(--white);appearance:none;-webkit-appearance:none;text-align:center;position:relative}
 .grupo-country-card:active{transform:scale(.95)}
 @media (hover:hover) and (pointer:fine){.grupo-country-card:hover{background:var(--bg-hover)}}
 .grupo-country-card.complete{border-color:var(--accent);box-shadow:0 0 0 1px rgba(96,165,250,.3)}
@@ -1059,6 +1063,8 @@ function render(){
 
   if(S.tab==='grupos'){
     footer.style.display='none';
+    grid.dataset.dir='';
+    _pageDir=0;
     if(S.level===2&&S.country){
       if(!S.groupSel) S.groupSel=S.country.group||null;
       bwrap.style.display='block';
