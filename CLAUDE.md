@@ -482,7 +482,7 @@ function prevPage(){if(document.getElementById('prev-btn').disabled)return; _pag
 
 ## Estado actual del proyecto
 
-- **SW versión**: `road2026-v45`
+- **SW versión**: `road2026-v46`
 - **Grid**: 4 columnas, `PER_PAGE = 16`
 - **Tab bar**: 9 tabs — **Grupos** / Faltan / Tengo / Repes / Canje / Stats / *(scroll)* Compartir / Backup / Agregar
 - **Sort quick bar**: 6 chips de íconos entre tabs y grid — A↕Z, Pág.↕, Escudo, Arquero, Equipo, Grupo (oculto en tab Grupos)

@@ -732,9 +732,26 @@ function copyShare(type){
   else{ el.select(); document.execCommand('copy'); toast('✅ Copiado'); }
 }
 
+function forceUpdate(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.update().then(function(){
+        toast('🔄 Buscando actualización...');
+        setTimeout(function(){ location.reload(true); }, 800);
+      });
+    });
+  } else {
+    location.reload(true);
+  }
+}
 function renderBackup(){
   var bkv=document.getElementById('backup-view'); bkv.style.display='block';
   bkv.innerHTML=
+    '<div class="share-box" style="border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.04)">'+
+      '<div class="stats-title" style="margin-bottom:8px;color:var(--accent)">🔄 Actualizar app</div>'+
+      '<div class="share-lbl">Si la app no muestra los últimos cambios, forzá la actualización.</div>'+
+      '<button class="share-btn blue" onclick="forceUpdate()" style="margin-top:10px"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Buscar y aplicar actualización</button>'+
+    '</div>'+
     '<div class="share-box"><div class="stats-title" style="margin-bottom:8px">💾 Exportar datos</div>'+
     '<div class="share-lbl">Descarga un archivo con todo tu progreso.</div>'+
     '<button class="share-btn green" onclick="exportData()"><i class="fa-solid fa-download" aria-hidden="true"></i> Descargar respaldo</button></div>'+
