@@ -1140,11 +1140,13 @@ function render(){
   // Calcula row height exacto para llenar el espacio disponible sin overflow
   (function(){
     var rowCount=Math.ceil(slice.length/4);
+    // Páginas parciales usan la misma altura de fila que una página completa
+    var effRows=Math.max(rowCount,S.level===2?5:4);
     var mainEl=document.getElementById('main');
     var sortH=document.getElementById('sort-quick').offsetHeight; // 0 si display:none
     var backH=bwrap.offsetHeight; if(backH) backH+=8; // +margin-bottom
-    var available=mainEl.clientHeight-20-sortH-backH-(rowCount-1)*4; // 20=padding top+bottom
-    var rowH=Math.max(S.level===2?68:90,Math.floor(available/rowCount));
+    var available=mainEl.clientHeight-20-sortH-backH-(effRows-1)*4; // 20=padding top+bottom
+    var rowH=Math.max(S.level===2?68:90,Math.floor(available/effRows));
     grid.style.gridAutoRows=rowH+'px';
   })();
 
