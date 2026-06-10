@@ -28,6 +28,8 @@ Tracker de láminas Panini para el FIFA World Cup 2026. PWA instalable, offline-
 | `sw.js` | Service Worker — cache offline |
 | `manifest.json` | Config PWA — íconos, colores, start_url |
 | `icon-192.png` / `icon-512.png` | Íconos de la app instalada |
+| `PRODUCT.md` | Contexto estratégico de diseño (registro product, usuarios, principios) — usado por `/impeccable` |
+| `DESIGN.md` | Sistema visual documentado (tokens, componentes, motion) — usado por `/impeccable` |
 
 ## Workflow Git
 
@@ -207,14 +209,13 @@ Fila de chips de íconos entre la tab bar y el grid. **Solo se muestra en level 
 
 Los chips de toggle muestran el ícono del estado actual (via `TOGGLE_CFG`). Función: `renderSortQuick()`.
 
-### `closeSortPanel()` — null guard obligatorio
-El tab-orden fue eliminado del DOM. `closeSortPanel()` hace null check antes de acceder:
+### `openSortPanel()` / `closeSortPanel()` — null guard obligatorio
+El tab-orden fue eliminado del DOM. **Ambas** funciones hacen null check antes de acceder:
 ```js
-function closeSortPanel(){
-  document.getElementById('sort-panel').style.display='none';
-  var t=document.getElementById('tab-orden'); if(t) t.classList.remove('tab-sort-on');
-}
+var t=document.getElementById('tab-orden'); if(t) t.classList.add('tab-sort-on');   // open
+var t=document.getElementById('tab-orden'); if(t) t.classList.remove('tab-sort-on'); // close
 ```
+> `toggleSortPanel()` y `setSort()` fueron eliminados (código muerto, sin callers).
 
 ### Sort panel (legacy — accesible desde `#sort-panel` en DOM)
 
@@ -227,13 +228,19 @@ Bottom sheet — todavía funcional si se llama `openSortPanel()` directamente. 
 
 **Grid: 4 columnas** (`repeat(4,1fr)`), `PER_PAGE = 16` (múltiplo de 4 → sin celdas vacías).
 
-### Lógica de altura de filas (JS inline en render)
+### Lógica de altura de filas (JS inline en render — dinámica desde SW v49/v50)
 ```js
-var rowCount = Math.ceil(slice.length / 4);
-grid.style.gridAutoRows = rowCount >= 4 ? 'minmax(68px,1fr)' : 'minmax(68px,110px)';
+var rowCount=Math.ceil(slice.length/4);
+var sortH=document.getElementById('sort-quick').offsetHeight; // 0 si display:none
+var backH=bwrap.offsetHeight; if(backH) backH+=8;             // +margin-bottom
+var available=mainEl.clientHeight-20-sortH-backH-(rowCount-1)*4; // 20=padding main
+var rowH=Math.max(S.level===2?68:90,Math.floor(available/rowCount));
+grid.style.gridAutoRows=rowH+'px';
 ```
-- ≥4 filas (página completa): `1fr` → llenan la pantalla
-- <4 filas (búsqueda con pocos resultados): cappadas a 110px → sin estiramiento
+- El row height se calcula **exacto** contra el espacio real de `main` en cada render → el grid nunca scrollea verticalmente, en ningún viewport ni nivel.
+- Resta el sort quick bar (level 1) y el back button (level 2).
+- Piso de seguridad: 90px países, 68px láminas.
+- `.grid` tiene `min-height:0` (sin esto flex no puede shrinkear y desborda).
 
 ### Contenido de la card
 - Bandera (flag-circle, 34px)
@@ -480,17 +487,32 @@ function prevPage(){if(document.getElementById('prev-btn').disabled)return; _pag
 **Causa**: `.canje-remove` no tenía min-size explícito, solo padding mínimo.
 **Solución**: `min-width:30px; min-height:30px; display:flex; align-items:center; justify-content:center`
 
+### Vista level 2 desbordaba verticalmente (scroll fantasma)
+**Causa**: El cálculo de row height no restaba la altura del back button (visible solo en level 2).
+**Solución**: `backH=bwrap.offsetHeight; if(backH) backH+=8;` restado de `available` (SW v50).
+
+### Swipe horizontal en vistas sin paginación re-renderizaba con flicker
+**Causa**: El handler `touchend` de main llamaba `nextPage()/prevPage()` también en Grupos/Stats/Canje/etc., donde los botones conservaban el estado disabled de la última vista de grid.
+**Solución**: Early return si `footer.style.display==='none'` (SW v50).
+
+### Barra de estado del PWA se veía verde (tema viejo)
+**Causa**: `<meta name="theme-color">` y `manifest.json` quedaron con `#091a10` (verde) tras la migración al tema azul.
+**Solución**: Ambos actualizados a `#05101f` (SW v50). **Regla**: al cambiar el tema, actualizar también meta theme-color y manifest.
+
 ## Estado actual del proyecto
 
-- **SW versión**: `road2026-v46`
-- **Grid**: 4 columnas, `PER_PAGE = 16`
+- **SW versión**: `road2026-v50`
+- **Grid**: 4 columnas, `PER_PAGE = 16`, row height dinámico (nunca scrollea)
 - **Tab bar**: 9 tabs — **Grupos** / Faltan / Tengo / Repes / Canje / Stats / *(scroll)* Compartir / Backup / Agregar
-- **Sort quick bar**: 6 chips de íconos entre tabs y grid — A↕Z, Pág.↕, Escudo, Arquero, Equipo, Grupo (oculto en tab Grupos)
-- **Feature Grupos**: vista jerárquica 3 niveles — tiles A-L → 4 países → 20 láminas completas
-- **Feature Canje**: deal button en cards de láminas, vista Canje con Posible Canje (verde) + Posible Intercambio (ámbar), flujo confirmar/rechazar
-- **Paginación**: animación direccional (slide-from-right / slide-from-left) sin flicker ni animación falsa en límites
+- **Sort quick bar**: 6 chips de íconos entre tabs y grid — A↕Z, Pág.↕, Escudo, Arquero, Equipo, Grupo (oculto en tab Grupos); chips con feedback `:active`
+- **Feature Grupos**: vista jerárquica 3 niveles — tiles A-L → 4 países → 20 láminas completas; animación `grupos-enter` (fade puro)
+- **Feature Canje**: deal button con `aria-pressed`, vista Canje con Posible Canje (verde) + Posible Intercambio (ámbar), flujo confirmar/rechazar
+- **Paginación**: animación direccional (slide-from-right / slide-from-left) sin flicker ni animación falsa en límites; swipe solo activo en vistas paginadas
 - **Grupos A-L**: implementados en datos y UI (badge `GRP X` en cards)
-- **Badge repes**: `font-size: 13px` (mejorado de 9px)
+- **Safe areas**: `viewport-fit=cover` + `env(safe-area-inset-top/bottom)` en header/footer
+- **Toast**: 1300ms
+- **PWA colors**: theme-color y manifest en `#05101f` (azul actual)
+- **Contexto de diseño**: `PRODUCT.md` (registro product, principios) + `DESIGN.md` (tokens, componentes) para `/impeccable`
 
 ## Skills disponibles
 
